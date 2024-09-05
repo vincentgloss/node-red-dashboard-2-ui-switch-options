@@ -1,5 +1,5 @@
 <script type="text/javascript">
-    RED.nodes.registerType('ui-switch-options', {
+    RED.nodes.registerType('switch options', {
         category: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.label.category'),
         color: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.colors.light'),
         defaults: {
@@ -107,7 +107,7 @@
     });
 </script>
 
-<script type="text/html" data-template-name="ui-switch-options">
+<script type="text/html" data-template-name="switch options">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
@@ -117,7 +117,7 @@
         <input type="text" id="node-input-group">
     </div>
     <div class="form-row">
-        <label><i class="fa fa-object-group"></i> <span data-i18n="ui-switch-options.label.size"></span></label>
+        <label><i class="fa fa-object-group"></i> <span data-i18n="switch options.label.size"></span></label>
         <input type="hidden" id="node-input-width">
         <input type="hidden" id="node-input-height">
         <button class="editor-button" id="node-input-size"></button>
@@ -140,7 +140,7 @@
     </div>
 </script>
 
-<script type="text/html" data-help-name="ui-switch-options">
+<script type="text/html" data-help-name="switch options">
     <div>
         <p><strong>Switch Options</strong> node allows you to create a widget that lets users switch between different options using "Previous" and "Next" buttons. It's designed to provide a simple way to navigate through a list of options and return the selected value.</p>
         

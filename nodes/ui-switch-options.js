@@ -63,5 +63,5 @@ module.exports = function (RED) {
         }
     }
 
-    RED.nodes.registerType('ui-switch-options', UISwitchOptionsNode);
+    RED.nodes.registerType('switch options', UISwitchOptionsNode);
 };
