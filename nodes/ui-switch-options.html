@@ -1,0 +1,162 @@
+<script type="text/javascript">
+    RED.nodes.registerType('ui-switch-options', {
+        category: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.label.category'),
+        color: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.colors.light'),
+        defaults: {
+            name: { value: "" },
+            group: { type: 'ui-group', required: true },
+            order: { value: 0 },
+            width: {
+                value: 0,
+                validate: function (v) {
+                    const width = v || 0;
+                    const currentGroup = $('#node-input-group').val() || this.group;
+                    const groupNode = RED.nodes.node(currentGroup);
+                    const valid = !groupNode || +width <= +groupNode.width;
+                    $('#node-input-size').toggleClass('input-error', !valid);
+                    return valid;
+                }
+            },
+            height: { value: 0 },
+            label: { value: "", required: false },
+            options: { value: [], required: true },
+            prevIcon: { value: '' },  // Default Material icon for "prev"
+            nextIcon: { value: '' }, // Default Material icon for "next"
+        },
+        inputs: 0,
+        outputs: 1,
+        icon: "font-awesome/fa-exchange",
+        label: function() {
+            return this.name || "switch options";
+        },
+        
+        oneditprepare: function () {
+            var node = this;
+
+            $('#node-input-size').elementSizer({
+                width: '#node-input-width',
+                height: '#node-input-height',
+                group: '#node-input-group'
+            });
+
+            // Initialize the editable list for options
+            $('#node-input-options-list').editableList({
+                addItem: function(container, index, optionData) {
+                    var option = optionData || {label: "", value: ""};
+
+                    var row = $('<div/>').appendTo(container);
+
+                    $('<input/>', {
+                        type: 'text',
+                        placeholder: 'Option Label',
+                        style: 'width: 45%; margin-right: 10px;',
+                        class: 'node-input-option-label'
+                    }).appendTo(row).val(option.label);
+
+                    $('<input/>', {
+                        type: 'text',
+                        placeholder: 'Option Value',
+                        style: 'width: 45%;',
+                        class: 'node-input-option-value'
+                    }).appendTo(row).val(option.value);
+                },
+                sortable: true,
+                removable: true,
+                height: 'auto',
+                scrollOnAdd: true,
+                header: $('<div>').append(
+                    $.parseHTML(
+                        "<div style='width:40%; margin-left:20%; display:inline-grid;'>Label</div><div style='width:40%; display:inline-grid;'>Value</div>"
+                    )
+                ),
+            });
+
+            // Load existing options into the editable list
+            (node.options || []).forEach(function(opt) {
+                $('#node-input-options-list').editableList('addItem', opt);
+            });
+
+            // Set the label input value
+            $('#node-input-label').val(node.label || '');
+
+            // Set icon inputs
+            $('#node-input-prev-icon').val(node.prevIcon || 'chevron-double-left');
+            $('#node-input-next-icon').val(node.nextIcon || 'chevron-double-right');
+        },
+
+        oneditsave: function () {
+            var node = this;
+
+            // Update label with custom or default value
+            this.label = $('#node-input-label').val() || "";
+
+            // Save the options from the editable list
+            this.options = [];
+            $('#node-input-options-list').editableList('items').each(function() {
+                var label = $(this).find('.node-input-option-label').val();
+                var value = $(this).find('.node-input-option-value').val();
+                if (label && value) {
+                    node.options.push({label: label, value: value});
+                }
+            });
+
+            // Save icon settings
+            this.prevIcon = $('#node-input-prev-icon').val() || '';
+            this.nextIcon = $('#node-input-next-icon').val() || '';
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="ui-switch-options">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-group"><i class="fa fa-table"></i> Group</label>
+        <input type="text" id="node-input-group">
+    </div>
+    <div class="form-row">
+        <label><i class="fa fa-object-group"></i> <span data-i18n="ui-switch-options.label.size"></span></label>
+        <input type="hidden" id="node-input-width">
+        <input type="hidden" id="node-input-height">
+        <button class="editor-button" id="node-input-size"></button>
+    </div>
+    <div class="form-row">
+        <label for="node-input-options-list"><i class="fa fa-list"></i> Options</label>
+        <div id="node-input-options-list" style="margin-top: 10px;"></div>
+    </div>
+    <div class="form-row">
+        <label for="node-input-label"><i class="fa fa-tag"></i> Label</label>
+        <input type="text" id="node-input-label" placeholder="Widget Label">
+    </div>
+    <div class="form-row">
+        <label for="node-input-prev-icon"><i class="fa fa-arrow-left"></i> Prev Icon</label>
+        <input type="text" id="node-input-prev-icon" placeholder="Material Icon Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-next-icon"><i class="fa fa-arrow-right"></i> Next Icon</label>
+        <input type="text" id="node-input-next-icon" placeholder="Material Icon Name">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="ui-switch-options">
+    <div>
+        <p><strong>Switch Options</strong> node allows you to create a widget that lets users switch between different options using "Previous" and "Next" buttons. It's designed to provide a simple way to navigate through a list of options and return the selected value.</p>
+        
+        <h3>Inputs</h3>
+        <ul>
+            <li><strong>payload</strong> (string): The value of the currently selected option. This is emitted whenever an option is switched.</li>
+        </ul>
+        
+        <h3>Configuration</h3>
+        <ul>
+            <li><strong>Name</strong> - The name of the node, which helps identify it in the Node-RED editor.</li>
+            <li><strong>Group</strong> - The display group in which the widget will be shown on the dashboard.</li>
+            <li><strong>Size</strong> - The dimensions of the widget. This will automatically adjust based on the group configuration.</li>
+            <li><strong>Options</strong> - A list of options for the widget. Each option should have a <code>label</code> and a <code>value</code>. These are the options users can switch between.</li>
+            <li><strong>Label</strong> - A text label that appears above the widget on the dashboard.</li>
+            <li><strong>Prev Icon</strong> - If provided, this <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design icon</a> will replace the default <strong>prev</strong> icon. No need to include the mdi prefix.</dd>
+            <li><strong>Next Icon</strong> - If provided, this <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design icon</a> will replace the default <strong>next</strong> icon. No need to include the mdi prefix.</dd>
+        </ul>
+</script>

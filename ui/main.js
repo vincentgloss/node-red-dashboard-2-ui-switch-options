@@ -3,8 +3,23 @@
  *
  * This file is useful for testing your component in isolation from Node-RED.
  */
-import { createApp } from 'vue'
+import { createApp } from 'vue';
+import { createVuetify } from 'vuetify';
+import { aliases, mdi } from 'vuetify/iconsets/mdi';
+import 'vuetify/styles'; // Import Vuetify styles
 
-import UIExample from './components/UIExample.vue'
+import UISwitchOptions from './components/UISwitchOptions.vue';
 
-createApp(UIExample).mount('#app')
+const vuetify = createVuetify({
+  icons: {
+    defaultSet: 'mdi',
+    aliases,
+    sets: {
+      mdi,
+    },
+  },
+});
+
+createApp(UISwitchOptions)
+  .use(vuetify) // Use Vuetify plugin
+  .mount('#app');
