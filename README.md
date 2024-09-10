@@ -27,3 +27,7 @@ npm install @vincentgloss/node-red-dashboard-2-ui-switch-options
 - **Icon Color**: The color of the **prev** and **next** icons. The colors may be recognized names such as "red" or "skyblue," or may be numerically specified, e.g., `#AEEA00`. The set of named colors can be found [here](https://vuetifyjs.com/en/styles/colors/).
 - **Icon Size**: The size of the **prev** and **next** icons. The size may be numerically specified in `px`.
 - **Button Color**: The color of the **prev** and **next** buttons. The colors may be recognized names such as "red" or "skyblue," or may be numerically specified, e.g., `#AEEA00`. The set of named colors can be found [here](https://vuetifyjs.com/en/styles/colors/).
+
+# Example images from the widget in the Dashboard
+![ui-switch-option1](https://github.com/user-attachments/assets/ce8ebc80-abed-451b-aa29-1e691e70697f)
+![ui-switch-option2](https://github.com/user-attachments/assets/2a0a58bd-0f24-46cc-88c1-87b9a5df0223)
