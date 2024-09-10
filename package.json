@@ -1,6 +1,6 @@
 {
     "name": "@vincentgloss/node-red-dashboard-2-ui-switch-options",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "A basic option switcher that integrates with Node-RED Dashboard 2.0",
     "keywords": [
         "node-red",

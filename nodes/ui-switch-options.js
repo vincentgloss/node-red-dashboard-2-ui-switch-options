@@ -1,60 +1,106 @@
 module.exports = function (RED) {
     function UISwitchOptionsNode(config) {
         RED.nodes.createNode(this, config);
-
         const node = this;
-        console.log('Node configuration:', config); // Debugging line
         const group = RED.nodes.getNode(config.group);
         const base = group.getBase();
         let currentOptionIndex = 0;
+        let options = config.options || []; // Default to config options if available
 
-        // Options are already an array of objects
-        const options = config.options || [];
+        function updateFrontend(optionIndex) {
+            console.log('Calling updateFrontend:', optionIndex);
+            const msg = {
+                payload: options[optionIndex]?.value || null,
+                topic: "ui-switch-options-update",
+                options: options, // Send options to the frontend
+                currentIndex: optionIndex
+            };
+            console.log('Sending message:', msg);
+            node.send(msg);
+        }
 
-        // Server-side event handlers
         const evts = {
             onAction: true,
             onInput: function (msg, send, done) {
-                if (msg.payload) {
-                    const matchingOptionIndex = options.findIndex(opt => opt.value === msg.payload);
+                let storedData = base.stores.data.get(node.id) || {};
+                console.log('Received input message:', msg);
+                
+                // Handle updating options array
+                if (msg.options && Array.isArray(msg.options)) {
+                    options = msg.options; // Update local options array
+                    storedData.options ??= {}    // initialise if necessary
+                    //storedData.options = options;
+                    storedData.options = {...storedData.options, ...msg.options}
+                    base.stores.data.save(base, node, storedData); // Save new options
+                    console.log('Updated and saved new options array:', options);
+                }
+                    
+                if (typeof msg.payload !== 'undefined') {
+                    var matchingOptionIndex = options.findIndex(opt => opt.value === msg.payload);
                     if (matchingOptionIndex !== -1) {
-                        currentOptionIndex = matchingOptionIndex;
-                        base.stores.data.save(base, node, msg);
+                      console.log('Calling updateFrontend with index:', matchingOptionIndex);
+                      try {
+                        updateFrontend(matchingOptionIndex);
+                        storedData.currentOptionIndex = matchingOptionIndex;
+                        base.stores.data.save(base, node, { currentOptionIndex: storedData.currentOptionIndex });
+                      } catch (error) {
+                        console.error('Error calling updateFrontend:', error);
+                      }
+                      console.log('updateFrontend should have been called');
+                    } else {
+                      // Emit a warning message to the Vue component
+                      node.send({ payload: 'Option not found in options array', topic: 'error' });
                     }
-                }
-        
-                // Send the updated message to any connected nodes
-                if (options[currentOptionIndex]) {
-                    const payload = options[currentOptionIndex].value;
-                    send({ payload });
-                    console.log(`Output payload = ${payload}`);
-                }
-                done();
+                  }
             },
             onSocket: {
+                'widget-load': function (conn, id) {
+                    if (id === node.id) {
+                        let storedData = base.stores.data.get(node.id) || {};
+                        const currentOptionIndex = storedData.currentOptionIndex || 0;
+                        const options = storedData.options || config.options || []; // Retrieve saved options
+                        
+                        // Send the saved index and options array to the client
+                        conn.emit(`widget-load:${id}`, { currentOptionIndex, options });
+                        console.log(`Sent currentOptionIndex and options to widget:`, currentOptionIndex, options);
+                    }
+                },
                 'switch-option': function (conn, id, selectedOptionValue) {
-                    // Ensure this node processes only its own messages
                     if (id === node.id) {
                         const matchingOptionIndex = options.findIndex(opt => opt.value === selectedOptionValue);
                         if (matchingOptionIndex !== -1) {
-                            currentOptionIndex = matchingOptionIndex; // Update the current option index
-                            console.log(`Updated currentOptionIndex to: ${currentOptionIndex}`);
-                        } else {
-                            console.warn(`Invalid option value: ${selectedOptionValue}`);
+                            currentOptionIndex = matchingOptionIndex;
+                            let storedData = base.stores.data.get(node.id) || {};
+                            storedData.currentOptionIndex = currentOptionIndex;
+                            base.stores.data.save(base, node, storedData); // Save current index
+
+                            const selectedOption = options[currentOptionIndex];
+                            if (selectedOption) {
+                                node.send({
+                                    payload: selectedOption.value,
+                                    label: selectedOption.label
+                                });
+                                console.log(`Sending updated option value: ${selectedOption.value}`);
+                            }
                         }
-        
-                        const selectedOption = options[currentOptionIndex];
-                        if (selectedOption) {
-                            node.send({ payload: selectedOption.value }); // Send the correct option back
-                            console.log(`Sending updated option value: ${selectedOption.value}`);
-                        }
-                    } else {
-                        console.log(`Ignoring switch-option event for unrelated ID: ${id}`);
+                    }
+                },
+                'new-options': function (conn, { id, options }) {
+                    if (id === node.id && Array.isArray(options)) {
+                        // Update and save the new options array
+                        let storedData = base.stores.data.get(node.id) || {};
+                        storedData.options ??= {}    // initialise if necessary
+                        //storedData.options = options;
+                        storedData.options = {...storedData.options, ...options}
+                        base.stores.data.save(base, node, storedData);
+                        console.log(`Updated options from frontend: ${options}`);
+                        
+                        // Optionally send updated options to the frontend
+                        conn.emit(`widget-load:${id}`, { currentOptionIndex: storedData.currentOptionIndex, options });
                     }
                 }
             }
         };
-        
 
         if (group) {
             group.register(node, config, evts);
@@ -63,5 +109,5 @@ module.exports = function (RED) {
         }
     }
 
-    RED.nodes.registerType('switch options', UISwitchOptionsNode);
+    RED.nodes.registerType('ui-switch-options', UISwitchOptionsNode);
 };

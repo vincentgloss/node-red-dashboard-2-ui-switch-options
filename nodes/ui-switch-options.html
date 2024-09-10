@@ -1,5 +1,5 @@
 <script type="text/javascript">
-    RED.nodes.registerType('switch options', {
+    RED.nodes.registerType('ui-switch-options', {
         category: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.label.category'),
         color: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.colors.light'),
         defaults: {
@@ -20,14 +20,18 @@
             height: { value: 0 },
             label: { value: "", required: false },
             options: { value: [], required: true },
-            prevIcon: { value: '' },  // Default Material icon for "prev"
-            nextIcon: { value: '' }, // Default Material icon for "next"
+            prevIcon: { value: '' },
+            nextIcon: { value: '' },
+            iconColor: { value: ''},
+            iconSize: { value: ''},
+            buttonColor: { value: ''},
         },
-        inputs: 0,
+        inputs: 1,
         outputs: 1,
         icon: "font-awesome/fa-exchange",
+        paletteLabel: "switch option",
         label: function() {
-            return this.name || "switch options";
+            return this.name || "switch option";
         },
         
         oneditprepare: function () {
@@ -80,8 +84,12 @@
             $('#node-input-label').val(node.label || '');
 
             // Set icon inputs
-            $('#node-input-prev-icon').val(node.prevIcon || 'chevron-double-left');
-            $('#node-input-next-icon').val(node.nextIcon || 'chevron-double-right');
+            $('#node-input-prev-icon').val(node.prevIcon );
+            $('#node-input-next-icon').val(node.nextIcon );
+            // Set icon & button color
+            $('#node-input-icon-color').val(node.iconColor );
+            $('#node-input-icon-size').val(node.iconSize );
+            $('#node-input-button-color').val(node.buttonColor );
         },
 
         oneditsave: function () {
@@ -101,13 +109,16 @@
             });
 
             // Save icon settings
-            this.prevIcon = $('#node-input-prev-icon').val() || '';
-            this.nextIcon = $('#node-input-next-icon').val() || '';
+            this.prevIcon = $('#node-input-prev-icon').val() || 'chevron-double-left';
+            this.nextIcon = $('#node-input-next-icon').val() || 'chevron-double-right';
+            this.iconColor = $('#node-input-icon-color').val() || '';
+            this.iconSize = $('#node-input-icon-size').val() || '';
+            this.buttonColor = $('#node-input-button-color').val() || '';
         }
     });
 </script>
 
-<script type="text/html" data-template-name="switch options">
+<script type="text/html" data-template-name="ui-switch-options">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
@@ -117,7 +128,7 @@
         <input type="text" id="node-input-group">
     </div>
     <div class="form-row">
-        <label><i class="fa fa-object-group"></i> <span data-i18n="switch options.label.size"></span></label>
+        <label><i class="fa fa-object-group"></i> <span data-i18n="ui-switch-options.label.size"></span></label>
         <input type="hidden" id="node-input-width">
         <input type="hidden" id="node-input-height">
         <button class="editor-button" id="node-input-size"></button>
@@ -138,15 +149,30 @@
         <label for="node-input-next-icon"><i class="fa fa-arrow-right"></i> Next Icon</label>
         <input type="text" id="node-input-next-icon" placeholder="Material Icon Name">
     </div>
+     <div class="form-row" style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="flex: 1; margin-right: 10px; display: flex; align-items: center;">
+            <label for="node-input-icon-color"><i class="fa fa-info-circle"></i> Icon Color</label>
+            <input type="text" id="node-input-icon-color" placeholder="white" style="width: 40%;">
+        </div>
+        <div style="flex: 1; display: flex; align-items: center;">
+            <label for="node-input-icon-size"><i class="fa fa-arrows-alt"></i> Icon Size</label>
+            <input type="text" id="node-input-icon-size" placeholder="px" style="width: 40%;">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-button-color"><i class="fa fa-hand-pointer-o"></i> Button color</label>
+        <input type="text" id="node-input-button-color" placeholder="">
+    </div>
 </script>
 
-<script type="text/html" data-help-name="switch options">
+<script type="text/html" data-help-name="ui-switch-options">
     <div>
-        <p><strong>Switch Options</strong> node allows you to create a widget that lets users switch between different options using "Previous" and "Next" buttons. It's designed to provide a simple way to navigate through a list of options and return the selected value.</p>
+        <p><strong>ui-switch-options</strong> node allows you to create a widget that lets users switch between different options using "Previous" and "Next" buttons. It's designed to provide a simple way to navigate through a list of options and return the selected value.</p>
         
         <h3>Inputs</h3>
         <ul>
-            <li><strong>payload</strong> (string): The value of the currently selected option. This is emitted whenever an option is switched.</li>
+            <li><strong>payload</strong> (string): A valid value of the option to be selected. This is also emitted whenever an option is switched.</li>
         </ul>
         
         <h3>Configuration</h3>
@@ -154,9 +180,12 @@
             <li><strong>Name</strong> - The name of the node, which helps identify it in the Node-RED editor.</li>
             <li><strong>Group</strong> - The display group in which the widget will be shown on the dashboard.</li>
             <li><strong>Size</strong> - The dimensions of the widget. This will automatically adjust based on the group configuration.</li>
-            <li><strong>Options</strong> - A list of options for the widget. Each option should have a <code>label</code> and a <code>value</code>. These are the options users can switch between.</li>
-            <li><strong>Label</strong> - A text label that appears above the widget on the dashboard.</li>
+            <li><strong>Options</strong> - A list of options for the widget. Each option should have a <code>label</code> (accepts plain html) and a <code>value</code>. These are the options users can switch between.</li>
+            <li><strong>Label</strong> - A text label (optional, accepts plain html) that appears above the widget on the dashboard.</li>
             <li><strong>Prev Icon</strong> - If provided, this <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design icon</a> will replace the default <strong>prev</strong> icon. No need to include the mdi prefix.</dd>
             <li><strong>Next Icon</strong> - If provided, this <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design icon</a> will replace the default <strong>next</strong> icon. No need to include the mdi prefix.</dd>
+            <li><strong>Icon Color</strong> - The color of the <strong>prev</strong>  and <strong>next</strong> icons. The colours may be recognised names such as "red" or "skyblue" or may be numerically specified, eg #AEEA00. The set of named colours can be found <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">here</a>.</dd>
+            <li><strong>Icon Size</strong> - The size of the <strong>prev</strong>  and <strong>next</strong>  icons. The size may be numerically specified in px.</dd>
+            <li><strong>Button Color</strong> - The color of the <strong>prev</strong>  and <strong>next</strong> buttons. The colours may be recognised names such as "red" or "skyblue" or may be numerically specified, eg #AEEA00. The set of named colours can be found <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">here</a>.</dd>
         </ul>
 </script>

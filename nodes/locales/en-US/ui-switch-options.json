@@ -1,5 +1,5 @@
 {
-    "switch options" : {
+    "ui-switch-options" : {
         "label": {
             "size": "Size"
         }
