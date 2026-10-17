@@ -4,7 +4,7 @@ A widget for [FlowFuse Dashboard 2.0](https://dashboard.flowfuse.com/), the dash
 
 **English** | [Deutsch](README.de.md)
 
-![A dashboard group with three option switchers: "Heating mode" showing "Off", "Temperature" with minus and plus buttons showing "22 °C", and "Color" with transparent buttons showing "Blue"](https://raw.githubusercontent.com/vincentgloss/node-red-dashboard-2-ui-switch-options/main/docs/dashboard-example.png)
+![A dashboard group with three option switchers: "Heating mode" showing "Off", "Temperature" with round minus and plus buttons at the edges showing "22 °C", and "Color" with transparent buttons showing "Blue"](https://raw.githubusercontent.com/vincentgloss/node-red-dashboard-2-ui-switch-options/main/docs/dashboard-example.png)
 
 ## Requirements
 
@@ -42,7 +42,7 @@ Below name, group and size a **preview** shows the widget with the current setti
 | **Options** | The list to step through. Each option has a label (shown, HTML allowed) and a value (sent). The value can be text, a number, a boolean or JSON. Without a label the value is shown. |
 | **After the last option, start again at the first** | On by default. If unchecked, the buttons stop at the first and the last option. |
 | **Send a message when an input message selects an option** | Off for new nodes. Leave it off if the widget only shows a state, so a message cannot loop back. |
-| **Send after** | 0 sends at once (default). With a time in seconds, a selection in the dashboard is sent only after no further switching for that long. Every click starts the wait again, and a bar below the buttons shows it. That way options can be skipped without triggering anything. Back at the starting option, nothing is sent. If an input message selects an option during the wait, the waiting selection is dropped. |
+| **Send after** | 0 sends at once (default). With a time in seconds, a selection in the dashboard is sent only after no further switching for that long. Every click starts the wait again, and a bar in the icon color below the buttons shows it. That way options can be skipped without triggering anything. Back at the starting option, nothing is sent. If an input message selects an option during the wait, the waiting selection is dropped. |
 | **Layout** | *Centered*: the text is as wide as the longest option, the buttons sit right next to it. *Buttons at the edges*: the buttons sit at the left and right edge, the text uses the room between them. Either way the buttons stay in place when the option changes. |
 | **Long text** | *Wrap*: at most 2 lines, then "…". *Shrink*: the font gets smaller, the same for all options, until they fit on one line (down to 14 px), then as *Wrap*. *One line*: "…" right away. Cut off text is shown in full as a tooltip. |
 | **Prev icon**, **Next icon** | Picker with suitable suggestions and a search over all [Material Design icons](https://pictogrammers.com/library/mdi/) of the installed Dashboard. Default: `chevron-double-left` and `chevron-double-right`. |

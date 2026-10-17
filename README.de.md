@@ -4,7 +4,7 @@ Ein Widget für [FlowFuse Dashboard 2.0](https://dashboard.flowfuse.com/), das D
 
 [English](README.md) | **Deutsch**
 
-![Eine Dashboard-Gruppe mit drei Optionsumschaltern: „Heating mode“ zeigt „Off“, „Temperature“ mit Minus- und Plus-Button zeigt „22 °C“, „Color“ mit transparenten Buttons zeigt „Blue“](https://raw.githubusercontent.com/vincentgloss/node-red-dashboard-2-ui-switch-options/main/docs/dashboard-example.png)
+![Eine Dashboard-Gruppe mit drei Optionsumschaltern: „Heating mode“ zeigt „Off“, „Temperature“ mit runden Minus- und Plus-Buttons am Rand zeigt „22 °C“, „Color“ mit transparenten Buttons zeigt „Blue“](https://raw.githubusercontent.com/vincentgloss/node-red-dashboard-2-ui-switch-options/main/docs/dashboard-example.png)
 
 ## Voraussetzungen
 
@@ -42,7 +42,7 @@ Unter Name, Gruppe und Größe zeigt eine **Vorschau** das Widget mit den aktuel
 | **Optionen** | Die Liste zum Durchschalten. Jede Option hat eine Beschriftung (angezeigt, HTML erlaubt) und einen Wert (gesendet). Der Wert kann Text, eine Zahl, ein Boolean oder JSON sein. Ohne Beschriftung wird der Wert angezeigt. |
 | **Nach der letzten Option wieder bei der ersten beginnen** | Standardmäßig an. Ohne Haken bleiben die Buttons bei der ersten und der letzten Option stehen. |
 | **Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt** | Bei neuen Nodes aus. Aus lassen, wenn das Widget nur einen Zustand anzeigt, damit keine Nachricht im Kreis läuft. |
-| **Senden nach** | 0 sendet sofort (Standard). Mit einer Zeit in Sekunden wird eine Auswahl im Dashboard erst gesendet, wenn so lange nicht weiter umgeschaltet wurde. Jeder Klick startet die Wartezeit neu, ein Balken unter den Buttons zeigt sie an. So lassen sich Optionen überspringen, ohne etwas auszulösen. Ist man am Ende wieder bei der Ausgangsoption, wird nichts gesendet. Wählt eine Eingabe-Nachricht in der Wartezeit eine Option, wird die wartende Auswahl verworfen. |
+| **Senden nach** | 0 sendet sofort (Standard). Mit einer Zeit in Sekunden wird eine Auswahl im Dashboard erst gesendet, wenn so lange nicht weiter umgeschaltet wurde. Jeder Klick startet die Wartezeit neu, ein Balken in der Icon-Farbe unter den Buttons zeigt sie an. So lassen sich Optionen überspringen, ohne etwas auszulösen. Ist man am Ende wieder bei der Ausgangsoption, wird nichts gesendet. Wählt eine Eingabe-Nachricht in der Wartezeit eine Option, wird die wartende Auswahl verworfen. |
 | **Layout** | *Zentriert*: Der Text ist so breit wie die längste Option, die Buttons stehen direkt daneben. *Buttons am Rand*: Die Buttons stehen links und rechts am Rand, der Text nutzt den Platz dazwischen. In beiden Fällen bleiben die Buttons beim Umschalten an ihrer Stelle. |
 | **Langer Text** | *Umbrechen*: höchstens 2 Zeilen, dann „…“. *Verkleinern*: Die Schrift wird für alle Optionen gleich so weit kleiner, dass sie in eine Zeile passen (höchstens bis 14 px), danach wie *Umbrechen*. *Eine Zeile*: sofort „…“. Gekürzter Text erscheint vollständig als Tooltip. |
 | **Icon zurück**, **Icon weiter** | Auswahl mit passenden Vorschlägen und Suche über alle [Material Design Icons](https://pictogrammers.com/library/mdi/) des installierten Dashboards. Standard: `chevron-double-left` und `chevron-double-right`. |

@@ -19,7 +19,7 @@
             </div>
             <!-- With a send delay: runs empty until the selection is sent; every click starts it again -->
             <div v-if="delay > 0" class="countdown">
-                <div v-if="waiting" :key="countdown" class="countdown-bar" :style="countdownStyle" @animationend="waiting = false" />
+                <div v-if="waiting" :key="countdown" class="countdown-bar" :class="countdownClass" :style="countdownStyle" @animationend="waiting = false" />
             </div>
         </div>
     </div>
@@ -28,6 +28,8 @@
 <script>
 // Smallest font size for "shrink", in px
 const MIN_FONT = 14
+// Color values Vuetify uses as CSS (everything else is a color name)
+const CSS_COLOR = /^(#|rgba?\(|hsla?\(|var\()/i
 
 // Icon names are entered without the "mdi-" prefix, but a prefix typed anyway is accepted too.
 function mdiIcon (name, fallback) {
@@ -91,13 +93,19 @@ export default {
         delay () {
             return Math.max(Number(this.props.delay) || 0, 0)
         },
-        // Button color if one is set, otherwise the theme color
+        // Own icon color if one is set, otherwise the theme color. Color names (as on the icon) through
+        // the Vuetify class, so "teal" is the same teal as the icon; CSS values like #AEEA00 directly.
+        countdownColor () {
+            const color = typeof this.settings.iconColor === 'string' ? this.settings.iconColor.trim() : ''
+            return color || 'primary'
+        },
+        countdownClass () {
+            return CSS_COLOR.test(this.countdownColor) ? undefined : 'bg-' + this.countdownColor
+        },
         countdownStyle () {
-            const color = this.settings.buttonColor
-            return {
-                'animation-duration': this.delay + 's',
-                'background-color': color && color !== 'transparent' ? color : 'rgb(var(--v-theme-primary))'
-            }
+            const style = { 'animation-duration': this.delay + 's' }
+            if (CSS_COLOR.test(this.countdownColor)) style['background-color'] = this.countdownColor
+            return style
         },
         overflow () {
             return ['shrink', 'ellipsis'].includes(this.props.overflow) ? this.props.overflow : 'wrap'

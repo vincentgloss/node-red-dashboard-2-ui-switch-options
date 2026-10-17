@@ -430,7 +430,7 @@
         "type": "comment",
         "z": "5c0e7a1b2d3f4e60a7b8000000000001",
         "name": "Temperature",
-        "info": "Number values, stops at 18 and 24. Input messages also send the selected value.",
+        "info": "Number values, stops at 18 and 24. Input messages also send the selected value. A click in the dashboard is sent 1.5 s after the last click (bar below the buttons), so you can skip temperatures. Buttons at the edges, round corners.",
         "x": 190,
         "y": 580,
         "wires": []
@@ -469,11 +469,14 @@
         ],
         "wrap": false,
         "passthru": true,
+        "delay": 1.5,
+        "layout": "edges",
         "prevIcon": "minus",
         "nextIcon": "plus",
         "iconColor": "",
         "iconSize": "",
         "buttonColor": "",
+        "buttonRadius": "24",
         "x": 500,
         "y": 660,
         "wires": [

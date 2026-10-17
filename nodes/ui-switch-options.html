@@ -411,7 +411,7 @@
                     $preview.find('.uso-w-body').attr('class', 'uso-w-body uso-layout-' + layout)
                     const delay = Math.max(Number($('#node-input-delay').val()) || 0, 0)
                     $preview.find('.uso-w-countdown').toggle(delay > 0)
-                    $preview.find('.uso-w-countdown-bar').css({ 'animation-duration': delay + 's', 'background-color': button && button !== 'transparent' ? button : colors.primary })
+                    $preview.find('.uso-w-countdown-bar').css({ 'animation-duration': delay + 's', 'background-color': icon ? iconColorCss(icon, colors) : colors.primary })
                     const $current = $preview.find('.uso-w-current').attr('class', 'uso-w-current uso-overflow-' + overflow).empty()
                     if (!options.length) $('<span class="uso-w-option active"></span>').text(t('preview.noOptions')).appendTo($current)
                     options.forEach(function (option, i) {
