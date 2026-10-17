@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 (2026-10-17)
+
+### Documentation
+
+- README: screenshots of the editor with the live preview and of the countdown bar for *Send after*.
+
 ## 1.1.0 (2026-10-17)
 
 ### Security

@@ -35,6 +35,8 @@ A ready-made demo is included: **Import → Examples → @vincentgloss/node-red-
 
 Below name, group and size a **preview** shows the widget with the current settings and the colors of the group's theme. Its buttons step through the options. Drag its lower right corner to make it narrower and see how long text behaves in a narrow widget. It stays at the top while scrolling.
 
+![The editor of the "Temperature" node: the preview at the top shows round minus and plus buttons at the edges, "20 °C" and the countdown bar; below it the settings Send after 1.5 seconds, Layout, Long text, icon pickers, icon size S/M/L and color swatches](https://raw.githubusercontent.com/vincentgloss/node-red-dashboard-2-ui-switch-options/main/docs/editor.png)
+
 | Field | Description |
 |---|---|
 | **Group**, **Size** | Where the widget appears and how much room it takes. |
@@ -49,6 +51,10 @@ Below name, group and size a **preview** shows the widget with the current setti
 | **Icon size** | **S** (18 px, default), **M** (24 px) or **L** (32 px), or an own size in pixels. |
 | **Icon color**, **Button color** | A color from the palette, your own with the eyedropper, or in the text field a value like `#AEEA00` or a [color name](https://vuetifyjs.com/en/styles/colors/) like `teal`. *Default* uses the theme. The button color can also be *Transparent* (no background, no shadow). Without an own icon color, the icon uses the theme color on transparent buttons and turns dark on light buttons. |
 | **Corners** | Corner radius of the buttons: *Square* (0 px), *Default* (4 px), *Rounded* (12 px), *Round* (24 px) or an own radius in pixels. |
+
+With *Send after*, a bar below the buttons runs empty until the selection is sent:
+
+![The "Temperature" widget right after a click: "20 °C" between the minus and plus button, below it a half empty bar](https://raw.githubusercontent.com/vincentgloss/node-red-dashboard-2-ui-switch-options/main/docs/countdown.png)
 
 ## Control from a flow
 

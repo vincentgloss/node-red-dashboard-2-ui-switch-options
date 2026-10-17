@@ -1,6 +1,6 @@
 {
     "name": "@vincentgloss/node-red-dashboard-2-ui-switch-options",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Option switcher for Node-RED FlowFuse Dashboard 2.0: step through a list of options with previous and next buttons, set options and selection from your flow, Material Design icons and own colors",
     "keywords": [
         "node-red",

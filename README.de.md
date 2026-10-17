@@ -35,6 +35,8 @@ Eine fertige Demo ist dabei: **Importieren → Beispiele → @vincentgloss/node-
 
 Unter Name, Gruppe und Größe zeigt eine **Vorschau** das Widget mit den aktuellen Einstellungen und den Farben aus dem Theme der Gruppe. Mit ihren Buttons blätterst du durch die Optionen. An der rechten unteren Ecke lässt sie sich schmaler ziehen, um zu sehen, wie sich langer Text in einem schmalen Widget verhält. Beim Scrollen bleibt sie oben stehen.
 
+![Der Editor des Nodes „Temperature“: Oben zeigt die Vorschau runde Minus- und Plus-Buttons am Rand, „20 °C“ und den Countdown-Balken; darunter die Einstellungen Senden nach 1,5 Sekunden, Layout, Langer Text, Icon-Auswahl, Icon-Größe S/M/L und Farbfelder](https://raw.githubusercontent.com/vincentgloss/node-red-dashboard-2-ui-switch-options/main/docs/editor.png)
+
 | Feld | Beschreibung |
 |---|---|
 | **Gruppe**, **Größe** | Wo das Widget erscheint und wie viel Platz es einnimmt. |
@@ -49,6 +51,10 @@ Unter Name, Gruppe und Größe zeigt eine **Vorschau** das Widget mit den aktuel
 | **Icon-Größe** | **S** (18 px, Standard), **M** (24 px) oder **L** (32 px), oder eine eigene Größe in Pixeln. |
 | **Icon-Farbe**, **Button-Farbe** | Eine Farbe aus der Palette, eine eigene über die Pipette, oder im Textfeld ein Wert wie `#AEEA00` oder ein [Farbname](https://vuetifyjs.com/en/styles/colors/) wie `teal`. *Standard* nutzt das Theme. Die Button-Farbe kann auch *Transparent* sein (kein Hintergrund, kein Schatten). Ohne eigene Icon-Farbe ist das Icon auf transparenten Buttons in der Theme-Farbe und auf hellen Buttons dunkel. |
 | **Ecken** | Rundung der Buttons: *Eckig* (0 px), *Standard* (4 px), *Abgerundet* (12 px), *Rund* (24 px) oder ein eigener Radius in Pixeln. |
+
+Mit *Senden nach* läuft unter den Buttons ein Balken leer, bis die Auswahl gesendet wird:
+
+![Das Widget „Temperature“ direkt nach einem Klick: „20 °C“ zwischen Minus- und Plus-Button, darunter ein halb leerer Balken](https://raw.githubusercontent.com/vincentgloss/node-red-dashboard-2-ui-switch-options/main/docs/countdown.png)
 
 ## Steuern aus dem Flow
 
