@@ -123,6 +123,11 @@ module.exports = function (RED) {
         // Nodes from version 1.0 have no passthru setting and always passed input selections on.
         const passthru = config.passthru === undefined ? true : config.passthru === true
         const wrap = config.wrap !== false
+        // Seconds without another click before a selection made in the dashboard is sent; 0 sends at once.
+        const delay = Math.max(Number(config.delay) || 0, 0)
+        let timer = null
+        let burstStart // value before the first click of a delayed series
+        let pending = {} // _client of the last click
 
         const configured = []
         for (const option of Array.isArray(config.options) ? config.options : []) {
@@ -237,6 +242,8 @@ module.exports = function (RED) {
                 if (msg.ui_update !== undefined) applyAppearance(msg.ui_update)
 
                 const selected = select(msg)
+                // A selection by message replaces a dashboard selection that is still waiting to be sent.
+                if (selected) cancelPending()
 
                 save()
                 // The Dashboard sends this msg to all clients after onInput, so it carries the full state.
@@ -251,16 +258,34 @@ module.exports = function (RED) {
                 if (found === -1) found = findOption(options, value.value)
                 if (found === -1) return
 
+                const before = options[index]
                 index = found
                 save()
                 base.emit('widget-sync:' + node.id, snapshot(), node, [conn.id])
-                node.send(output(base.includeClientData && msg?._client ? { _client: msg._client } : {}))
+                const extra = base.includeClientData && msg?._client ? { _client: msg._client } : {}
+                if (!delay) return node.send(output(extra))
+
+                // Delayed: every click starts the wait again. Back at the starting option nothing is sent.
+                if (timer) clearTimeout(timer)
+                else burstStart = before ? before.value : undefined
+                pending = extra
+                timer = setTimeout(() => {
+                    timer = null
+                    const option = options[index]
+                    if (option && !same(option.value, burstStart)) node.send(output(pending))
+                }, delay * 1000)
             }
         }
 
+        function cancelPending () {
+            if (timer) clearTimeout(timer)
+            timer = null
+        }
+        node.on('close', cancelPending)
+
         save()
         // The widget gets the converted options, so typed values are right before the first load.
-        group.register(node, { ...config, options: configured, wrap }, evts)
+        group.register(node, { ...config, options: configured, wrap, delay }, evts)
     }
 
     RED.nodes.registerType('ui-switch-options', UISwitchOptionsNode)

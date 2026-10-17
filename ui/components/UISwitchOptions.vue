@@ -2,19 +2,25 @@
     <!-- Newer Dashboard versions hide the widget themselves, older ones (1.23) need v-show -->
     <div v-show="state?.visible !== false" class="option-switcher-wrapper">
         <h2 v-if="settings.label" v-html="settings.label" />
-        <div class="option-switcher" :class="'layout-' + layout">
-            <v-btn :disabled="!canPrev" :style="buttonStyle" aria-label="Previous option" @click="step(-1)">
-                <v-icon :color="iconColor" :size="iconSize">{{ prevIcon }}</v-icon>
-            </v-btn>
-            <!-- All labels lie on top of each other, so the box is as wide and high as the largest one
-                 and the buttons do not move when the option changes. Only the current one is visible. -->
-            <div ref="labels" class="current-option" :class="'overflow-' + overflow" :title="fullText || undefined" aria-live="polite">
-                <span v-for="(option, i) in options" :key="i" class="option-label" :class="{ active: i === index }" v-html="option.label" />
-                <span v-if="!options.length" class="option-label active">No option available</span>
+        <div class="switcher-body" :class="'layout-' + layout">
+            <div class="option-switcher">
+                <v-btn :disabled="!canPrev" :style="buttonStyle" aria-label="Previous option" @click="step(-1)">
+                    <v-icon :color="iconColor" :size="iconSize">{{ prevIcon }}</v-icon>
+                </v-btn>
+                <!-- All labels lie on top of each other, so the box is as wide and high as the largest one
+                     and the buttons do not move when the option changes. Only the current one is visible. -->
+                <div ref="labels" class="current-option" :class="'overflow-' + overflow" :title="fullText || undefined" aria-live="polite">
+                    <span v-for="(option, i) in options" :key="i" class="option-label" :class="{ active: i === index }" v-html="option.label" />
+                    <span v-if="!options.length" class="option-label active">No option available</span>
+                </div>
+                <v-btn :disabled="!canNext" :style="buttonStyle" aria-label="Next option" @click="step(1)">
+                    <v-icon :color="iconColor" :size="iconSize">{{ nextIcon }}</v-icon>
+                </v-btn>
             </div>
-            <v-btn :disabled="!canNext" :style="buttonStyle" aria-label="Next option" @click="step(1)">
-                <v-icon :color="iconColor" :size="iconSize">{{ nextIcon }}</v-icon>
-            </v-btn>
+            <!-- With a send delay: runs empty until the selection is sent; every click starts it again -->
+            <div v-if="delay > 0" class="countdown">
+                <div v-if="waiting" :key="countdown" class="countdown-bar" :style="countdownStyle" @animationend="waiting = false" />
+            </div>
         </div>
     </div>
 </template>
@@ -63,7 +69,10 @@ export default {
             // Overrides from msg.ui_update
             appearance: {},
             // Text of the current option if it is cut off, shown as tooltip
-            fullText: ''
+            fullText: '',
+            // Send delay countdown: running, and a key that restarts the animation
+            waiting: false,
+            countdown: 0
         }
     },
     computed: {
@@ -78,6 +87,17 @@ export default {
         },
         layout () {
             return this.props.layout === 'edges' ? 'edges' : 'center'
+        },
+        delay () {
+            return Math.max(Number(this.props.delay) || 0, 0)
+        },
+        // Button color if one is set, otherwise the theme color
+        countdownStyle () {
+            const color = this.settings.buttonColor
+            return {
+                'animation-duration': this.delay + 's',
+                'background-color': color && color !== 'transparent' ? color : 'rgb(var(--v-theme-primary))'
+            }
         },
         overflow () {
             return ['shrink', 'ellipsis'].includes(this.props.overflow) ? this.props.overflow : 'wrap'
@@ -136,7 +156,7 @@ export default {
     created () {
         // Subscribes to msg-input, widget-load and widget-sync, handles enabled/visible/class
         // and unsubscribes again when the widget is removed.
-        this.$dataTracker(this.id, this.apply, this.apply, null, this.apply)
+        this.$dataTracker(this.id, this.onInput, this.apply, null, this.apply)
     },
     mounted () {
         // Fit again when the widget gets another width (window, group, hidden and shown again).
@@ -158,6 +178,11 @@ export default {
         cancelAnimationFrame(this.frame)
     },
     methods: {
+        // A selection by message replaces one that is waiting to be sent.
+        onInput (msg) {
+            this.waiting = false
+            this.apply(msg)
+        },
         // Every message from the node carries the full state: options, index, payload and appearance.
         apply (msg) {
             if (!msg) return
@@ -176,6 +201,10 @@ export default {
             const count = this.options.length
             this.index = (this.index + direction + count) % count
             this.$socket.emit('widget-change', this.id, { index: this.index, value: this.current.value })
+            if (this.delay > 0) {
+                this.countdown++
+                this.waiting = true
+            }
         },
         // "shrink": one font size for all options (so it does not jump when switching), as large as possible
         // while every label fits on one line, but not below MIN_FONT. Longer labels then wrap like "wrap".
@@ -213,16 +242,25 @@ export default {
     padding: 20px;
 }
 
-.option-switcher {
+/* Row and countdown, as wide as the row */
+.switcher-body {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
     max-width: 100%;
     margin-top: 20px;
 }
 
-.option-switcher.layout-edges {
+.switcher-body.layout-edges {
     width: 100%;
+}
+
+.option-switcher {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.layout-edges .option-switcher {
     justify-content: space-between;
 }
 
@@ -273,5 +311,25 @@ export default {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.countdown {
+    height: 4px;
+    margin-top: 10px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.countdown-bar {
+    height: 100%;
+    transform-origin: left;
+    animation-name: countdown;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+@keyframes countdown {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
 }
 </style>

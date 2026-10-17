@@ -17,15 +17,12 @@
             "buttonColor": "Button color",
             "layout": "Layout",
             "overflow": "Long text",
-            "buttonRadius": "Corners"
+            "buttonRadius": "Corners",
+            "delay": "Send after"
         },
         "placeholder": {
             "label": "Text above the widget (optional, HTML allowed)",
             "color": "color name or #rrggbb"
-        },
-        "tab": {
-            "options": "Options",
-            "look": "Appearance"
         },
         "preview": {
             "title": "Preview",
@@ -67,6 +64,14 @@
             "rounded": "Rounded (12 px)",
             "round": "Round (24 px)",
             "custom": "Own radius in pixels"
+        },
+        "section": {
+            "behavior": "Behavior",
+            "look": "Appearance"
+        },
+        "delay": {
+            "unit": "seconds",
+            "hint": "0 sends at once. Otherwise a selection in the dashboard is sent only after no further switching for that long. That way options can be skipped without triggering anything. A bar below the buttons shows the wait."
         },
         "errors": {
             "noGroup": "No group configured",

@@ -33,7 +33,7 @@ Eine fertige Demo ist dabei: **Importieren → Beispiele → @vincentgloss/node-
 
 ## Einstellungen
 
-Oben im Editor zeigt eine **Vorschau** das Widget mit den aktuellen Einstellungen und den Farben aus dem Theme der Gruppe. Mit ihren Buttons blätterst du durch die Optionen. An der rechten unteren Ecke lässt sie sich schmaler ziehen, um zu sehen, wie sich langer Text in einem schmalen Widget verhält. Die Einstellungen sind auf die Tabs *Optionen* und *Darstellung* verteilt.
+Unter Name, Gruppe und Größe zeigt eine **Vorschau** das Widget mit den aktuellen Einstellungen und den Farben aus dem Theme der Gruppe. Mit ihren Buttons blätterst du durch die Optionen. An der rechten unteren Ecke lässt sie sich schmaler ziehen, um zu sehen, wie sich langer Text in einem schmalen Widget verhält. Beim Scrollen bleibt sie oben stehen.
 
 | Feld | Beschreibung |
 |---|---|
@@ -42,6 +42,7 @@ Oben im Editor zeigt eine **Vorschau** das Widget mit den aktuellen Einstellunge
 | **Optionen** | Die Liste zum Durchschalten. Jede Option hat eine Beschriftung (angezeigt, HTML erlaubt) und einen Wert (gesendet). Der Wert kann Text, eine Zahl, ein Boolean oder JSON sein. Ohne Beschriftung wird der Wert angezeigt. |
 | **Nach der letzten Option wieder bei der ersten beginnen** | Standardmäßig an. Ohne Haken bleiben die Buttons bei der ersten und der letzten Option stehen. |
 | **Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt** | Bei neuen Nodes aus. Aus lassen, wenn das Widget nur einen Zustand anzeigt, damit keine Nachricht im Kreis läuft. |
+| **Senden nach** | 0 sendet sofort (Standard). Mit einer Zeit in Sekunden wird eine Auswahl im Dashboard erst gesendet, wenn so lange nicht weiter umgeschaltet wurde. Jeder Klick startet die Wartezeit neu, ein Balken unter den Buttons zeigt sie an. So lassen sich Optionen überspringen, ohne etwas auszulösen. Ist man am Ende wieder bei der Ausgangsoption, wird nichts gesendet. Wählt eine Eingabe-Nachricht in der Wartezeit eine Option, wird die wartende Auswahl verworfen. |
 | **Layout** | *Zentriert*: Der Text ist so breit wie die längste Option, die Buttons stehen direkt daneben. *Buttons am Rand*: Die Buttons stehen links und rechts am Rand, der Text nutzt den Platz dazwischen. In beiden Fällen bleiben die Buttons beim Umschalten an ihrer Stelle. |
 | **Langer Text** | *Umbrechen*: höchstens 2 Zeilen, dann „…“. *Verkleinern*: Die Schrift wird für alle Optionen gleich so weit kleiner, dass sie in eine Zeile passen (höchstens bis 14 px), danach wie *Umbrechen*. *Eine Zeile*: sofort „…“. Gekürzter Text erscheint vollständig als Tooltip. |
 | **Icon zurück**, **Icon weiter** | Auswahl mit passenden Vorschlägen und Suche über alle [Material Design Icons](https://pictogrammers.com/library/mdi/) des installierten Dashboards. Standard: `chevron-double-left` und `chevron-double-right`. |
@@ -68,7 +69,7 @@ Alle offenen Dashboards zeigen immer dieselbe Option und dasselbe Aussehen, auch
 
 ## Ausgabe
 
-Eine Nachricht wird gesendet, wenn jemand im Dashboard umschaltet, und wenn eine Eingabe-Nachricht eine Option wählt, sofern *Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt* angehakt ist:
+Eine Nachricht wird gesendet, wenn jemand im Dashboard umschaltet (mit *Senden nach* erst nach der Wartezeit), und wenn eine Eingabe-Nachricht eine Option wählt, sofern *Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt* angehakt ist:
 
 ```json
 { "payload": "comfort", "label": "Comfort", "index": 2 }

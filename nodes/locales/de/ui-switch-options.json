@@ -17,15 +17,12 @@
             "buttonColor": "Button-Farbe",
             "layout": "Layout",
             "overflow": "Langer Text",
-            "buttonRadius": "Ecken"
+            "buttonRadius": "Ecken",
+            "delay": "Senden nach"
         },
         "placeholder": {
             "label": "Text über dem Widget (optional, HTML erlaubt)",
             "color": "Farbname oder #rrggbb"
-        },
-        "tab": {
-            "options": "Optionen",
-            "look": "Darstellung"
         },
         "preview": {
             "title": "Vorschau",
@@ -67,6 +64,14 @@
             "rounded": "Abgerundet (12 px)",
             "round": "Rund (24 px)",
             "custom": "Eigener Radius in Pixeln"
+        },
+        "section": {
+            "behavior": "Verhalten",
+            "look": "Darstellung"
+        },
+        "delay": {
+            "unit": "Sekunden",
+            "hint": "0 sendet sofort. Sonst wird eine Auswahl im Dashboard erst gesendet, wenn so lange nicht weiter umgeschaltet wurde. So lassen sich Optionen überspringen, ohne etwas auszulösen. Ein Balken unter den Buttons zeigt die Wartezeit."
         },
         "errors": {
             "noGroup": "Keine Gruppe konfiguriert",

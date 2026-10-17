@@ -127,6 +127,10 @@
                 iconSize: { value: '' },
                 buttonColor: { value: '' },
                 buttonRadius: { value: '' },
+                delay: {
+                    value: 0,
+                    validate: function (v) { return v === '' || v === undefined || (!isNaN(Number(v)) && Number(v) >= 0) }
+                },
                 layout: { value: 'center' },
                 overflow: { value: 'wrap' }
             },
@@ -158,18 +162,6 @@
                 // Nodes from version 1.0 have no passthru setting and always passed input selections on.
                 if (node.passthru === undefined) $('#node-input-passthru').prop('checked', true)
                 if (node.wrap === undefined) $('#node-input-wrap').prop('checked', true)
-
-                // ---- tabs -------------------------------------------------------------------------------
-                const tabs = RED.tabs.create({
-                    id: 'uso-tabs',
-                    onchange: function (tab) {
-                        $('#uso-tabs-content').children().hide()
-                        $('#' + tab.id).show()
-                        $editor.find('.uso-icon-panel').prop('hidden', true)
-                    }
-                })
-                tabs.addTab({ id: 'uso-tab-options', label: t('tab.options') })
-                tabs.addTab({ id: 'uso-tab-look', label: t('tab.look') })
 
                 // ---- options list -----------------------------------------------------------------------
                 $('#node-input-options-list').editableList({
@@ -266,6 +258,7 @@
                 // Nodes from before these settings get the defaults
                 if (!node.layout) $('#node-input-layout').val('center')
                 if (!node.overflow) $('#node-input-overflow').val('wrap')
+                if (node.delay === undefined || node.delay === '') $('#node-input-delay').val(0)
 
                 // ---- icon pickers -----------------------------------------------------------------------
                 // A button showing the current icon; it opens a panel with suggestions and a search over all Material Design Icons.
@@ -415,7 +408,10 @@
                     const label = $('#node-input-label').val()
                     $preview.find('.uso-w-label').html(sanitize(label)).toggle(label !== '')
                     // All labels on top of each other, only the current one visible, as in the widget
-                    $preview.find('.uso-w-row').attr('class', 'uso-w-row uso-layout-' + layout)
+                    $preview.find('.uso-w-body').attr('class', 'uso-w-body uso-layout-' + layout)
+                    const delay = Math.max(Number($('#node-input-delay').val()) || 0, 0)
+                    $preview.find('.uso-w-countdown').toggle(delay > 0)
+                    $preview.find('.uso-w-countdown-bar').css({ 'animation-duration': delay + 's', 'background-color': button && button !== 'transparent' ? button : colors.primary })
                     const $current = $preview.find('.uso-w-current').attr('class', 'uso-w-current uso-overflow-' + overflow).empty()
                     if (!options.length) $('<span class="uso-w-option active"></span>').text(t('preview.noOptions')).appendTo($current)
                     options.forEach(function (option, i) {
@@ -464,7 +460,10 @@
                     const count = previewOptions().length
                     if (!count) return
                     const next = previewIndex + Number($(this).attr('data-step'))
+                    const before = previewIndex
                     previewIndex = $('#node-input-wrap').prop('checked') ? (next + count) % count : Math.min(Math.max(next, 0), count - 1)
+                    // With a send delay the bar runs empty again, as in the widget
+                    if (previewIndex !== before) $('#uso-preview .uso-w-countdown').empty().append('<div class="uso-w-countdown-bar"></div>')
                     updatePreview()
                 })
                 $('#uso-preview-toggle').on('click', function () {
@@ -504,6 +503,21 @@
 
 <script type="text/html" data-template-name="ui-switch-options">
     <div id="uso-editor">
+        <div class="form-row">
+            <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="ui-switch-options.label.name"></span></label>
+            <input type="text" id="node-input-name" data-i18n="[placeholder]ui-switch-options.label.name">
+        </div>
+        <div class="form-row">
+            <label for="node-input-group"><i class="fa fa-table"></i> <span data-i18n="ui-switch-options.label.group"></span></label>
+            <input type="text" id="node-input-group">
+        </div>
+        <div class="form-row">
+            <label><i class="fa fa-object-group"></i> <span data-i18n="ui-switch-options.label.size"></span></label>
+            <input type="hidden" id="node-input-width">
+            <input type="hidden" id="node-input-height">
+            <button class="editor-button" id="node-input-size"></button>
+        </div>
+
         <div class="uso-preview-box">
             <button type="button" id="uso-preview-toggle" class="uso-preview-toggle" aria-expanded="true" aria-controls="uso-preview-body">
                 <i class="fa fa-angle-down"></i> <span data-i18n="ui-switch-options.preview.title"></span>
@@ -511,114 +525,103 @@
             <div id="uso-preview-body">
                 <div id="uso-preview" class="uso-preview">
                     <div class="uso-w-label"></div>
-                    <div class="uso-w-row">
-                        <button type="button" class="uso-w-btn" data-step="-1" tabindex="-1"><span class="uso-glyph"></span></button>
-                        <span class="uso-w-current"></span>
-                        <button type="button" class="uso-w-btn" data-step="1" tabindex="-1"><span class="uso-glyph"></span></button>
+                    <div class="uso-w-body">
+                        <div class="uso-w-row">
+                            <button type="button" class="uso-w-btn" data-step="-1" tabindex="-1"><span class="uso-glyph"></span></button>
+                            <span class="uso-w-current"></span>
+                            <button type="button" class="uso-w-btn" data-step="1" tabindex="-1"><span class="uso-glyph"></span></button>
+                        </div>
+                        <div class="uso-w-countdown"></div>
                     </div>
                 </div>
                 <div class="uso-hint" data-i18n="ui-switch-options.preview.hint"></div>
             </div>
         </div>
 
-        <div class="form-row uso-tabs-row">
-            <ul id="uso-tabs"></ul>
+        <div class="form-row">
+            <label for="node-input-label"><i class="fa fa-i-cursor"></i> <span data-i18n="ui-switch-options.label.label"></span></label>
+            <input type="text" id="node-input-label" data-i18n="[placeholder]ui-switch-options.placeholder.label">
         </div>
-        <div id="uso-tabs-content">
-            <div id="uso-tab-options">
-                <div class="form-row">
-                    <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="ui-switch-options.label.name"></span></label>
-                    <input type="text" id="node-input-name" data-i18n="[placeholder]ui-switch-options.label.name">
-                </div>
-                <div class="form-row">
-                    <label for="node-input-group"><i class="fa fa-table"></i> <span data-i18n="ui-switch-options.label.group"></span></label>
-                    <input type="text" id="node-input-group">
-                </div>
-                <div class="form-row">
-                    <label><i class="fa fa-object-group"></i> <span data-i18n="ui-switch-options.label.size"></span></label>
-                    <input type="hidden" id="node-input-width">
-                    <input type="hidden" id="node-input-height">
-                    <button class="editor-button" id="node-input-size"></button>
-                </div>
-                <div class="form-row">
-                    <label for="node-input-label"><i class="fa fa-i-cursor"></i> <span data-i18n="ui-switch-options.label.label"></span></label>
-                    <input type="text" id="node-input-label" data-i18n="[placeholder]ui-switch-options.placeholder.label">
-                </div>
-                <div class="form-row node-input-options-container-row">
-                    <label><i class="fa fa-list"></i> <span data-i18n="ui-switch-options.label.options"></span></label>
-                    <ol id="node-input-options-list"></ol>
-                </div>
-                <div class="form-row">
-                    <label for="node-input-wrap" style="width: auto;">
-                        <input type="checkbox" id="node-input-wrap" style="width: auto; margin: 0 6px 0 0;">
-                        <span data-i18n="ui-switch-options.label.wrap"></span>
-                    </label>
-                </div>
-                <div class="form-row">
-                    <label for="node-input-passthru" style="width: auto;">
-                        <input type="checkbox" id="node-input-passthru" style="width: auto; margin: 0 6px 0 0;">
-                        <span data-i18n="ui-switch-options.label.passthru"></span>
-                    </label>
-                </div>
-            </div>
+        <div class="form-row node-input-options-container-row">
+            <label><i class="fa fa-list"></i> <span data-i18n="ui-switch-options.label.options"></span></label>
+            <ol id="node-input-options-list"></ol>
+        </div>
 
-            <div id="uso-tab-look" style="display: none;">
-                <div class="form-row">
-                    <label for="node-input-layout"><i class="fa fa-arrows-h"></i> <span data-i18n="ui-switch-options.label.layout"></span></label>
-                    <select id="node-input-layout" style="width: 70%;">
-                        <option value="center" data-i18n="ui-switch-options.layout.center"></option>
-                        <option value="edges" data-i18n="ui-switch-options.layout.edges"></option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <label for="node-input-overflow"><i class="fa fa-text-width"></i> <span data-i18n="ui-switch-options.label.overflow"></span></label>
-                    <select id="node-input-overflow" style="width: 70%;">
-                        <option value="wrap" data-i18n="ui-switch-options.overflow.wrap"></option>
-                        <option value="shrink" data-i18n="ui-switch-options.overflow.shrink"></option>
-                        <option value="ellipsis" data-i18n="ui-switch-options.overflow.ellipsis"></option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <label><i class="fa fa-arrow-left"></i> <span data-i18n="ui-switch-options.label.prevIcon"></span></label>
-                    <input type="hidden" id="node-input-prevIcon">
-                </div>
-                <div class="form-row">
-                    <label><i class="fa fa-arrow-right"></i> <span data-i18n="ui-switch-options.label.nextIcon"></span></label>
-                    <input type="hidden" id="node-input-nextIcon">
-                </div>
-                <div class="form-row uso-flex-row">
-                    <label for="node-input-iconSize"><i class="fa fa-arrows-alt"></i> <span data-i18n="ui-switch-options.label.iconSize"></span></label>
-                    <span id="uso-size-presets" class="button-group">
-                        <button type="button" class="red-ui-button toggle uso-size" data-preset="s" data-i18n="[title]ui-switch-options.size.s">S</button><button type="button" class="red-ui-button toggle uso-size" data-preset="m" data-i18n="[title]ui-switch-options.size.m">M</button><button type="button" class="red-ui-button toggle uso-size" data-preset="l" data-i18n="[title]ui-switch-options.size.l">L</button>
-                    </span>
-                    <span class="uso-size-custom">
-                        <input type="text" id="node-input-iconSize" placeholder="18" data-i18n="[title]ui-switch-options.size.custom">
-                        <span>px</span>
-                    </span>
-                </div>
-                <div class="form-row uso-flex-row">
-                    <label for="node-input-iconColor"><i class="fa fa-paint-brush"></i> <span data-i18n="ui-switch-options.label.iconColor"></span></label>
-                    <div class="uso-color">
-                        <input type="text" id="node-input-iconColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
-                    </div>
-                </div>
-                <div class="form-row uso-flex-row">
-                    <label for="node-input-buttonColor"><i class="fa fa-square"></i> <span data-i18n="ui-switch-options.label.buttonColor"></span></label>
-                    <div class="uso-color">
-                        <input type="text" id="node-input-buttonColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
-                    </div>
-                </div>
-                <div class="form-row uso-flex-row">
-                    <label for="node-input-buttonRadius"><i class="fa fa-square-o"></i> <span data-i18n="ui-switch-options.label.buttonRadius"></span></label>
-                    <span id="uso-radius-presets" class="button-group">
-                        <button type="button" class="red-ui-button toggle uso-radius" data-preset="square" data-i18n="[title]ui-switch-options.radius.square"><span class="uso-radius-demo" style="border-radius: 0;"></span></button><button type="button" class="red-ui-button toggle uso-radius" data-preset="standard" data-i18n="[title]ui-switch-options.radius.standard"><span class="uso-radius-demo" style="border-radius: 2px;"></span></button><button type="button" class="red-ui-button toggle uso-radius" data-preset="rounded" data-i18n="[title]ui-switch-options.radius.rounded"><span class="uso-radius-demo" style="border-radius: 5px;"></span></button><button type="button" class="red-ui-button toggle uso-radius" data-preset="round" data-i18n="[title]ui-switch-options.radius.round"><span class="uso-radius-demo" style="border-radius: 8px;"></span></button>
-                    </span>
-                    <span class="uso-size-custom">
-                        <input type="text" id="node-input-buttonRadius" placeholder="4" data-i18n="[title]ui-switch-options.radius.custom">
-                        <span>px</span>
-                    </span>
-                </div>
+        <div class="uso-section" data-i18n="ui-switch-options.section.behavior"></div>
+        <div class="form-row">
+            <label for="node-input-wrap" style="width: auto;">
+                <input type="checkbox" id="node-input-wrap" style="width: auto; margin: 0 6px 0 0;">
+                <span data-i18n="ui-switch-options.label.wrap"></span>
+            </label>
+        </div>
+        <div class="form-row">
+            <label for="node-input-passthru" style="width: auto;">
+                <input type="checkbox" id="node-input-passthru" style="width: auto; margin: 0 6px 0 0;">
+                <span data-i18n="ui-switch-options.label.passthru"></span>
+            </label>
+        </div>
+        <div class="form-row">
+            <label for="node-input-delay"><i class="fa fa-clock-o"></i> <span data-i18n="ui-switch-options.label.delay"></span></label>
+            <input type="number" id="node-input-delay" min="0" step="0.5" style="width: 80px;">
+            <span data-i18n="ui-switch-options.delay.unit"></span>
+            <div class="uso-hint uso-indent" data-i18n="ui-switch-options.delay.hint"></div>
+        </div>
+
+        <div class="uso-section" data-i18n="ui-switch-options.section.look"></div>
+        <div class="form-row">
+            <label for="node-input-layout"><i class="fa fa-arrows-h"></i> <span data-i18n="ui-switch-options.label.layout"></span></label>
+            <select id="node-input-layout" style="width: 70%;">
+                <option value="center" data-i18n="ui-switch-options.layout.center"></option>
+                <option value="edges" data-i18n="ui-switch-options.layout.edges"></option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="node-input-overflow"><i class="fa fa-text-width"></i> <span data-i18n="ui-switch-options.label.overflow"></span></label>
+            <select id="node-input-overflow" style="width: 70%;">
+                <option value="wrap" data-i18n="ui-switch-options.overflow.wrap"></option>
+                <option value="shrink" data-i18n="ui-switch-options.overflow.shrink"></option>
+                <option value="ellipsis" data-i18n="ui-switch-options.overflow.ellipsis"></option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label><i class="fa fa-arrow-left"></i> <span data-i18n="ui-switch-options.label.prevIcon"></span></label>
+            <input type="hidden" id="node-input-prevIcon">
+        </div>
+        <div class="form-row">
+            <label><i class="fa fa-arrow-right"></i> <span data-i18n="ui-switch-options.label.nextIcon"></span></label>
+            <input type="hidden" id="node-input-nextIcon">
+        </div>
+        <div class="form-row uso-flex-row">
+            <label for="node-input-iconSize"><i class="fa fa-arrows-alt"></i> <span data-i18n="ui-switch-options.label.iconSize"></span></label>
+            <span id="uso-size-presets" class="button-group">
+                <button type="button" class="red-ui-button toggle uso-size" data-preset="s" data-i18n="[title]ui-switch-options.size.s">S</button><button type="button" class="red-ui-button toggle uso-size" data-preset="m" data-i18n="[title]ui-switch-options.size.m">M</button><button type="button" class="red-ui-button toggle uso-size" data-preset="l" data-i18n="[title]ui-switch-options.size.l">L</button>
+            </span>
+            <span class="uso-size-custom">
+                <input type="text" id="node-input-iconSize" placeholder="18" data-i18n="[title]ui-switch-options.size.custom">
+                <span>px</span>
+            </span>
+        </div>
+        <div class="form-row uso-flex-row">
+            <label for="node-input-iconColor"><i class="fa fa-paint-brush"></i> <span data-i18n="ui-switch-options.label.iconColor"></span></label>
+            <div class="uso-color">
+                <input type="text" id="node-input-iconColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
             </div>
+        </div>
+        <div class="form-row uso-flex-row">
+            <label for="node-input-buttonColor"><i class="fa fa-square"></i> <span data-i18n="ui-switch-options.label.buttonColor"></span></label>
+            <div class="uso-color">
+                <input type="text" id="node-input-buttonColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
+            </div>
+        </div>
+        <div class="form-row uso-flex-row">
+            <label for="node-input-buttonRadius"><i class="fa fa-square-o"></i> <span data-i18n="ui-switch-options.label.buttonRadius"></span></label>
+            <span id="uso-radius-presets" class="button-group">
+                <button type="button" class="red-ui-button toggle uso-radius" data-preset="square" data-i18n="[title]ui-switch-options.radius.square"><span class="uso-radius-demo" style="border-radius: 0;"></span></button><button type="button" class="red-ui-button toggle uso-radius" data-preset="standard" data-i18n="[title]ui-switch-options.radius.standard"><span class="uso-radius-demo" style="border-radius: 2px;"></span></button><button type="button" class="red-ui-button toggle uso-radius" data-preset="rounded" data-i18n="[title]ui-switch-options.radius.rounded"><span class="uso-radius-demo" style="border-radius: 5px;"></span></button><button type="button" class="red-ui-button toggle uso-radius" data-preset="round" data-i18n="[title]ui-switch-options.radius.round"><span class="uso-radius-demo" style="border-radius: 8px;"></span></button>
+            </span>
+            <span class="uso-size-custom">
+                <input type="text" id="node-input-buttonRadius" placeholder="4" data-i18n="[title]ui-switch-options.radius.custom">
+                <span>px</span>
+            </span>
         </div>
     </div>
 </script>
@@ -634,8 +637,13 @@
     #uso-editor .uso-preview { display: flex; flex-direction: column; align-items: center; box-sizing: border-box; width: 100%; min-width: 220px; max-width: 100%; padding: 20px; overflow: hidden; resize: horizontal;
         border: 1px solid var(--red-ui-secondary-border-color, #ccc); border-radius: 4px; font-family: Helvetica, Arial, sans-serif; }
     #uso-editor .uso-w-label { font-size: 21px; font-weight: 700; line-height: 1.425; margin-bottom: 20px; text-align: center; }
-    #uso-editor .uso-w-row { display: flex; align-items: center; justify-content: center; max-width: 100%; }
-    #uso-editor .uso-w-row.uso-layout-edges { width: 100%; justify-content: space-between; }
+    #uso-editor .uso-w-body { display: flex; flex-direction: column; max-width: 100%; }
+    #uso-editor .uso-w-body.uso-layout-edges { width: 100%; }
+    #uso-editor .uso-w-row { display: flex; align-items: center; justify-content: center; }
+    #uso-editor .uso-layout-edges .uso-w-row { justify-content: space-between; }
+    #uso-editor .uso-w-countdown { height: 4px; margin-top: 10px; border-radius: 2px; overflow: hidden; }
+    #uso-editor .uso-w-countdown-bar { height: 100%; transform-origin: left; animation: uso-countdown linear forwards; }
+    @keyframes uso-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
     #uso-editor .uso-w-row > .uso-w-btn { flex-shrink: 0; }
     /* Long text, as in the widget: all labels on top of each other, only the current one visible */
     #uso-editor .uso-w-current { display: grid; grid-template-columns: minmax(0, 1fr); flex: 0 1 auto; min-width: 0; margin: 0 20px; font-size: 21px; line-height: 1.425; text-align: center; }
@@ -653,7 +661,8 @@
 
     #uso-editor .uso-glyph { display: inline-block; font-family: "uso-mdi"; font-style: normal; font-weight: normal; line-height: 1; -webkit-font-smoothing: antialiased; }
 
-    #uso-editor .uso-tabs-row { margin-bottom: 12px; }
+    #uso-editor .uso-section { margin: 18px 0 10px; padding-bottom: 4px; border-bottom: 1px solid var(--red-ui-secondary-border-color, #ddd); font-weight: bold; }
+    #uso-editor .uso-indent { margin-left: 104px; }
     #uso-editor .uso-flex-row { display: flex; align-items: flex-start; gap: 8px; }
     #uso-editor .uso-flex-row > label { flex: 0 0 auto; margin-top: 6px; }
 

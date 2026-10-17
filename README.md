@@ -33,7 +33,7 @@ A ready-made demo is included: **Import → Examples → @vincentgloss/node-red-
 
 ## Configuration
 
-At the top of the editor a **preview** shows the widget with the current settings and the colors of the group's theme. Its buttons step through the options. Drag its lower right corner to make it narrower and see how long text behaves in a narrow widget. The settings are split into the tabs *Options* and *Appearance*.
+Below name, group and size a **preview** shows the widget with the current settings and the colors of the group's theme. Its buttons step through the options. Drag its lower right corner to make it narrower and see how long text behaves in a narrow widget. It stays at the top while scrolling.
 
 | Field | Description |
 |---|---|
@@ -42,6 +42,7 @@ At the top of the editor a **preview** shows the widget with the current setting
 | **Options** | The list to step through. Each option has a label (shown, HTML allowed) and a value (sent). The value can be text, a number, a boolean or JSON. Without a label the value is shown. |
 | **After the last option, start again at the first** | On by default. If unchecked, the buttons stop at the first and the last option. |
 | **Send a message when an input message selects an option** | Off for new nodes. Leave it off if the widget only shows a state, so a message cannot loop back. |
+| **Send after** | 0 sends at once (default). With a time in seconds, a selection in the dashboard is sent only after no further switching for that long. Every click starts the wait again, and a bar below the buttons shows it. That way options can be skipped without triggering anything. Back at the starting option, nothing is sent. If an input message selects an option during the wait, the waiting selection is dropped. |
 | **Layout** | *Centered*: the text is as wide as the longest option, the buttons sit right next to it. *Buttons at the edges*: the buttons sit at the left and right edge, the text uses the room between them. Either way the buttons stay in place when the option changes. |
 | **Long text** | *Wrap*: at most 2 lines, then "…". *Shrink*: the font gets smaller, the same for all options, until they fit on one line (down to 14 px), then as *Wrap*. *One line*: "…" right away. Cut off text is shown in full as a tooltip. |
 | **Prev icon**, **Next icon** | Picker with suitable suggestions and a search over all [Material Design icons](https://pictogrammers.com/library/mdi/) of the installed Dashboard. Default: `chevron-double-left` and `chevron-double-right`. |
@@ -68,7 +69,7 @@ All open dashboards always show the same option and appearance, also after a rel
 
 ## Output
 
-A message is sent when somebody switches in a dashboard, and when an input message selects an option if *Send a message when an input message selects an option* is checked:
+A message is sent when somebody switches in a dashboard (with *Send after* only after the wait), and when an input message selects an option if *Send a message when an input message selects an option* is checked:
 
 ```json
 { "payload": "comfort", "label": "Comfort", "index": 2 }

@@ -46,14 +46,15 @@
     <h3>Details</h3>
     <p>Eine Nachricht wird gesendet, wenn jemand im Dashboard umschaltet. Wählt eine Eingabe-Nachricht eine Option,
         wird nur dann eine Nachricht gesendet, wenn <i>Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt</i> angehakt ist.
-        Alle offenen Dashboards zeigen dieselbe Option.</p>
+        Alle offenen Dashboards zeigen dieselbe Option.
+        Mit <i>Senden nach</i> wird eine Auswahl im Dashboard erst gesendet, wenn eine Weile nicht weiter umgeschaltet wurde.</p>
     <p>Nach einem Deploy startet das Widget wieder mit den Optionen und dem Aussehen aus dem Editor.
         Die gewählte Option bleibt erhalten, wenn sie dort noch vorkommt.</p>
 
     <h3>Einstellungen</h3>
-    <p>Oben im Editor zeigt eine <b>Vorschau</b> das Widget mit den aktuellen Einstellungen und den Farben aus dem Theme der Gruppe.
+    <p>Unter Name, Gruppe und Größe zeigt eine <b>Vorschau</b> das Widget mit den aktuellen Einstellungen und den Farben aus dem Theme der Gruppe.
         Mit ihren Buttons blätterst du durch die Optionen. An der rechten unteren Ecke lässt sie sich schmaler ziehen,
-        um zu sehen, wie sich langer Text in einem schmalen Widget verhält. Die Einstellungen sind auf die Tabs <i>Optionen</i> und <i>Darstellung</i> verteilt.</p>
+        um zu sehen, wie sich langer Text in einem schmalen Widget verhält. Beim Scrollen bleibt sie oben stehen.</p>
     <dl class="message-properties">
         <dt>Gruppe, Größe</dt>
         <dd>Wo das Widget im Dashboard erscheint und wie viel Platz es einnimmt.</dd>
@@ -66,6 +67,11 @@
         <dd>Ohne Haken bleiben die Buttons bei der ersten und der letzten Option stehen.</dd>
         <dt>Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt</dt>
         <dd>Ohne Haken lassen, wenn das Widget nur einen Zustand anzeigt, damit keine Nachricht im Kreis läuft.</dd>
+        <dt>Senden nach</dt>
+        <dd>0 sendet sofort. Mit einer Zeit in Sekunden wird eine Auswahl im Dashboard erst gesendet, wenn so lange nicht weiter
+            umgeschaltet wurde. Jeder Klick startet die Wartezeit neu, ein Balken unter den Buttons zeigt sie an.
+            So lassen sich Optionen überspringen, ohne etwas auszulösen. Ist man am Ende wieder bei der Ausgangsoption, wird nichts gesendet.
+            Wählt eine Eingabe-Nachricht in der Wartezeit eine Option, wird die wartende Auswahl verworfen.</dd>
         <dt>Layout</dt>
         <dd><i>Zentriert</i>: Der Text ist so breit wie die längste Option, die Buttons stehen direkt daneben.
             <i>Buttons am Rand</i>: Die Buttons stehen links und rechts am Rand, der Text nutzt den Platz dazwischen.

@@ -32,8 +32,9 @@
 - Setting *Layout*: centered (as wide as the longest option) or buttons at the edges.
 - Setting *Long text*: wrap to at most 2 lines, shrink the font (down to 14 px), or one line; cut off text ends with "…" and shows a tooltip.
 - Setting *Corners* for the button corner radius (square, default, rounded, round or own px), also as `buttonRadius` in `msg.ui_update`.
-- New editor: a live preview of the whole widget at the top (colors from the group's theme, its buttons step through the options), tabs *Options* and *Appearance*, an icon picker with suggestions and a search over all Material Design icons of the installed Dashboard, color swatches with an eyedropper, and icon sizes S, M, L or own pixels.
+- New editor: a live preview of the whole widget below name, group and size (stays at the top while scrolling; colors from the group's theme, its buttons step through the options), sections *Behavior* and *Appearance*, an icon picker with suggestions and a search over all Material Design icons of the installed Dashboard, color swatches with an eyedropper, and icon sizes S, M, L or own pixels.
 - Setting *Send a message when an input message selects an option* (off for new nodes, on for nodes from 1.0).
+- Setting *Send after*: a selection in the dashboard is sent only after the given seconds without further switching, so options can be skipped without triggering anything. A bar below the buttons shows the wait.
 - Setting *After the last option, start again at the first* (on by default). If off, the buttons stop at both ends.
 - `msg.payload` finds options with the same JSON, and `"true"` finds the option `true`.
 - `msg.enabled`, `msg.visible` and `msg.class`.
