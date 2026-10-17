@@ -1,0 +1,59 @@
+<script type="text/html" data-help-name="ui-switch-options">
+    <p>Ein Dashboard-Widget, das mit den Buttons <b>zurück</b> und <b>weiter</b> durch eine Liste von Optionen schaltet.
+        Bei jedem Umschalten wird der Wert der gewählten Option gesendet.</p>
+
+    <h3>Eingaben</h3>
+    <dl class="message-properties">
+        <dt class="optional">payload <span class="property-type">string | number | boolean</span></dt>
+        <dd>Wählt die Option mit diesem Wert. Eine Zahl findet auch eine Option mit dem gleichen Text als Wert,
+            <code>1</code> wählt also die Option <code>"1"</code>. Passt keine Option, zeigt der Node eine Warnung und nichts ändert sich.</dd>
+        <dt class="optional">options <span class="property-type">array</span></dt>
+        <dd>Ersetzt die Optionen, zum Beispiel <code>[{"label":"Aus","value":"off"},{"label":"An","value":"on"}]</code>.
+            Jede Option braucht einen <code>value</code>; ohne <code>label</code> wird der Wert angezeigt.
+            Die aktuelle Option bleibt gewählt, wenn sie noch in der Liste ist, sonst die erste.</dd>
+        <dt class="optional">enabled <span class="property-type">boolean</span></dt>
+        <dd><code>false</code> sperrt die Buttons, <code>true</code> gibt sie wieder frei.</dd>
+        <dt class="optional">visible <span class="property-type">boolean</span></dt>
+        <dd><code>false</code> blendet das Widget aus, <code>true</code> wieder ein.</dd>
+        <dt class="optional">class <span class="property-type">string</span></dt>
+        <dd>Fügt dem Widget CSS-Klassen hinzu.</dd>
+    </dl>
+
+    <h3>Ausgaben</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">beliebig</span></dt>
+        <dd>Der Wert der gewählten Option.</dd>
+        <dt>label <span class="property-type">string</span></dt>
+        <dd>Die Beschriftung der gewählten Option.</dd>
+        <dt>index <span class="property-type">number</span></dt>
+        <dd>Die Position der gewählten Option, beginnend bei 0.</dd>
+        <dt class="optional">topic <span class="property-type">string</span></dt>
+        <dd>Aus der Eingabe-Nachricht übernommen, falls sie eins hatte.</dd>
+    </dl>
+
+    <h3>Details</h3>
+    <p>Eine Nachricht wird gesendet, wenn jemand im Dashboard umschaltet und wenn eine Eingabe-Nachricht eine Option wählt.
+        Alle offenen Dashboards zeigen dieselbe Option.</p>
+    <p>Nach einem Deploy startet das Widget wieder mit den Optionen aus dem Editor.
+        Die gewählte Option bleibt erhalten, wenn sie dort noch vorkommt.</p>
+
+    <h3>Einstellungen</h3>
+    <dl class="message-properties">
+        <dt>Gruppe, Größe</dt>
+        <dd>Wo das Widget im Dashboard erscheint und wie viel Platz es einnimmt.</dd>
+        <dt>Beschriftung</dt>
+        <dd>Optionaler Text über dem Widget. HTML ist erlaubt.</dd>
+        <dt>Optionen</dt>
+        <dd>Die Liste zum Durchschalten. Jede Option hat eine Beschriftung (angezeigt, HTML erlaubt) und einen Wert (gesendet).</dd>
+        <dt>Icon zurück, Icon weiter</dt>
+        <dd>Name eines <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design Icons</a>
+            ohne das Präfix <code>mdi-</code>, z. B. <code>chevron-left</code>.
+            Standard: <code>chevron-double-left</code> und <code>chevron-double-right</code>.</dd>
+        <dt>Icon-Farbe, Button-Farbe</dt>
+        <dd>Leer nutzt das Theme. Sonst ein Farbname wie <code>red</code> oder <code>skyblue</code>,
+            ein Wert wie <code>#AEEA00</code> oder <code>transparent</code> für einen Button ohne Hintergrund und Schatten.
+            <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">Farbnamen</a></dd>
+        <dt>Icon-Größe</dt>
+        <dd>Zum Beispiel <code>24</code> oder <code>24px</code>. Leer nutzt die Standardgröße.</dd>
+    </dl>
+</script>

@@ -1,0 +1,28 @@
+{
+    "ui-switch-options": {
+        "label": {
+            "name": "Name",
+            "group": "Gruppe",
+            "size": "Größe",
+            "label": "Beschriftung",
+            "options": "Optionen",
+            "optionLabel": "Beschriftung",
+            "optionValue": "Wert",
+            "prevIcon": "Icon zurück",
+            "nextIcon": "Icon weiter",
+            "iconColor": "Icon-Farbe",
+            "iconSize": "Icon-Größe",
+            "buttonColor": "Button-Farbe"
+        },
+        "placeholder": {
+            "label": "Text über dem Widget (optional, HTML erlaubt)",
+            "color": "z. B. red, #AEEA00, transparent",
+            "iconSize": "z. B. 24 oder 24px"
+        },
+        "errors": {
+            "noGroup": "Keine Gruppe konfiguriert",
+            "invalidOptions": "msg.options muss ein Array aus Objekten mit value sein, z. B. [{\"label\":\"An\",\"value\":\"on\"}]",
+            "notFound": "Keine Option mit dem Wert \"__value__\""
+        }
+    }
+}

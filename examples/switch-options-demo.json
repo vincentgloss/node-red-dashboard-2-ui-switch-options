@@ -1,0 +1,366 @@
+[
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "type": "tab",
+        "label": "Switch Options Demo",
+        "disabled": false,
+        "info": "Demo of ui-switch-options. Open the dashboard at /switch-options-demo, switch in the dashboard and use the inject nodes on the left."
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000002",
+        "type": "ui-base",
+        "name": "Switch Options Demo",
+        "path": "/switch-options-demo",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default"
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000003",
+        "type": "ui-theme",
+        "name": "Switch Options Demo Theme",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#0094ce",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000004",
+        "type": "ui-page",
+        "name": "Switch options",
+        "ui": "5c0e7a1b2d3f4e60a7b8000000000002",
+        "path": "/switch-options",
+        "icon": "swap-horizontal",
+        "layout": "grid",
+        "theme": "5c0e7a1b2d3f4e60a7b8000000000003",
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000005",
+        "type": "ui-group",
+        "name": "Switch options",
+        "page": "5c0e7a1b2d3f4e60a7b8000000000004",
+        "width": "6",
+        "height": "1",
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000006",
+        "type": "ui-switch-options",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Heating mode",
+        "group": "5c0e7a1b2d3f4e60a7b8000000000005",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Heating mode",
+        "options": [
+            {
+                "label": "Off",
+                "value": "off"
+            },
+            {
+                "label": "Eco",
+                "value": "eco"
+            },
+            {
+                "label": "Comfort",
+                "value": "comfort"
+            },
+            {
+                "label": "Boost",
+                "value": "boost"
+            }
+        ],
+        "prevIcon": "",
+        "nextIcon": "",
+        "iconColor": "",
+        "iconSize": "",
+        "buttonColor": "",
+        "x": 480,
+        "y": 160,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000020"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000007",
+        "type": "ui-switch-options",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Color",
+        "group": "5c0e7a1b2d3f4e60a7b8000000000005",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "label": "Color <small>(own icons and colors)</small>",
+        "options": [
+            {
+                "label": "<span style=\"color:#e53935\">Red</span>",
+                "value": "red"
+            },
+            {
+                "label": "<span style=\"color:#43a047\">Green</span>",
+                "value": "green"
+            },
+            {
+                "label": "<span style=\"color:#1e88e5\">Blue</span>",
+                "value": "blue"
+            }
+        ],
+        "prevIcon": "chevron-left",
+        "nextIcon": "chevron-right",
+        "iconColor": "#0094ce",
+        "iconSize": "32",
+        "buttonColor": "transparent",
+        "x": 480,
+        "y": 420,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000020"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000008",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Select \"Comfort\"",
+        "props": [
+            {
+                "p": "payload",
+                "v": "comfort",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 80,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000009",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Replace options",
+        "props": [
+            {
+                "p": "options",
+                "v": "[{\"label\":\"Low\",\"value\":1},{\"label\":\"Medium\",\"value\":2},{\"label\":\"High\",\"value\":3}]",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 120,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000010",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Back to editor options",
+        "props": [
+            {
+                "p": "options",
+                "v": "[{\"label\":\"Off\",\"value\":\"off\"},{\"label\":\"Eco\",\"value\":\"eco\"},{\"label\":\"Comfort\",\"value\":\"comfort\"},{\"label\":\"Boost\",\"value\":\"boost\"}]",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 160,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000011",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Disable",
+        "props": [
+            {
+                "p": "enabled",
+                "v": "false",
+                "vt": "bool"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 200,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000012",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Enable",
+        "props": [
+            {
+                "p": "enabled",
+                "v": "true",
+                "vt": "bool"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 240,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000013",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Hide",
+        "props": [
+            {
+                "p": "visible",
+                "v": "false",
+                "vt": "bool"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 280,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000014",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Show",
+        "props": [
+            {
+                "p": "visible",
+                "v": "true",
+                "vt": "bool"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 320,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000015",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Select \"blue\"",
+        "props": [
+            {
+                "p": "payload",
+                "v": "blue",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 420,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000007"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000020",
+        "type": "debug",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 730,
+        "y": 280,
+        "wires": []
+    }
+]

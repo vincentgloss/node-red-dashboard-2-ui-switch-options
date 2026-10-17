@@ -1,3 +1,59 @@
 <script type="text/html" data-help-name="ui-switch-options">
-    <p>In-Editor help text will go here.</p>
+    <p>A Dashboard widget that steps through a list of options with <b>previous</b> and <b>next</b> buttons.
+        Every switch sends the value of the selected option.</p>
+
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt class="optional">payload <span class="property-type">string | number | boolean</span></dt>
+        <dd>Selects the option with this value. A number also finds an option whose value is the same text,
+            so <code>1</code> selects the option <code>"1"</code>. If no option matches, the node shows a warning and nothing changes.</dd>
+        <dt class="optional">options <span class="property-type">array</span></dt>
+        <dd>Replaces the options, for example <code>[{"label":"Off","value":"off"},{"label":"On","value":"on"}]</code>.
+            Each option needs a <code>value</code>; without a <code>label</code> the value is shown.
+            The current option stays selected if it is still in the list, otherwise the first one.</dd>
+        <dt class="optional">enabled <span class="property-type">boolean</span></dt>
+        <dd><code>false</code> disables the buttons, <code>true</code> enables them again.</dd>
+        <dt class="optional">visible <span class="property-type">boolean</span></dt>
+        <dd><code>false</code> hides the widget, <code>true</code> shows it again.</dd>
+        <dt class="optional">class <span class="property-type">string</span></dt>
+        <dd>Adds CSS classes to the widget.</dd>
+    </dl>
+
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">any</span></dt>
+        <dd>The value of the selected option.</dd>
+        <dt>label <span class="property-type">string</span></dt>
+        <dd>The label of the selected option.</dd>
+        <dt>index <span class="property-type">number</span></dt>
+        <dd>The position of the selected option, starting at 0.</dd>
+        <dt class="optional">topic <span class="property-type">string</span></dt>
+        <dd>Taken from the input message, if it had one.</dd>
+    </dl>
+
+    <h3>Details</h3>
+    <p>A message is sent when somebody switches in a dashboard, and when an input message selects an option.
+        All open dashboards show the same option.</p>
+    <p>After a redeploy the widget starts with the options from the editor again.
+        The selected option is kept if it is still one of them.</p>
+
+    <h3>Configuration</h3>
+    <dl class="message-properties">
+        <dt>Group, Size</dt>
+        <dd>Where the widget appears in the dashboard and how much room it takes.</dd>
+        <dt>Label</dt>
+        <dd>Optional text above the widget. HTML is allowed.</dd>
+        <dt>Options</dt>
+        <dd>The list to step through. Each option has a label (shown, HTML allowed) and a value (sent).</dd>
+        <dt>Prev icon, Next icon</dt>
+        <dd>Name of a <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design icon</a>
+            without the <code>mdi-</code> prefix, e.g. <code>chevron-left</code>.
+            Default: <code>chevron-double-left</code> and <code>chevron-double-right</code>.</dd>
+        <dt>Icon color, Button color</dt>
+        <dd>Empty uses the theme. Otherwise a color name like <code>red</code> or <code>skyblue</code>,
+            a value like <code>#AEEA00</code>, or <code>transparent</code> for a button without background and shadow.
+            <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">Named colors</a></dd>
+        <dt>Icon size</dt>
+        <dd>For example <code>24</code> or <code>24px</code>. Empty uses the default size.</dd>
+    </dl>
 </script>

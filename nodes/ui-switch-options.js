@@ -1,113 +1,116 @@
 module.exports = function (RED) {
-    function UISwitchOptionsNode(config) {
-        RED.nodes.createNode(this, config);
-        const node = this;
-        const group = RED.nodes.getNode(config.group);
-        const base = group.getBase();
-        let currentOptionIndex = 0;
-        let options = config.options || []; // Default to config options if available
+    // Options are { label, value }. A missing label falls back to the value. Returns null if the list is invalid.
+    function normalizeOptions (list) {
+        if (!Array.isArray(list)) return null
+        const result = []
+        for (const item of list) {
+            if (item === null || typeof item !== 'object' || item.value === undefined) return null
+            const label = item.label === undefined || item.label === null || item.label === '' ? item.value : item.label
+            result.push({ label: String(label), value: item.value })
+        }
+        return result
+    }
 
-        function updateFrontend(optionIndex) {
-            console.log('Calling updateFrontend:', optionIndex);
-            const msg = {
-                payload: options[optionIndex]?.value || null,
-                topic: "ui-switch-options-update",
-                options: options, // Send options to the frontend
-                currentIndex: optionIndex
-            };
-            console.log('Sending message:', msg);
-            node.send(msg);
+    // Exact match first, then by text, so a number 1 also finds the option "1" from the editor.
+    function findOption (options, value) {
+        const exact = options.findIndex(option => option.value === value)
+        if (exact !== -1 || value === null || typeof value === 'object') return exact
+        return options.findIndex(option => option.value !== null && typeof option.value !== 'object' && String(option.value) === String(value))
+    }
+
+    // The Dashboard turns errors of type "warn" into a node warning and does not pass the message on to the widget.
+    function warning (message) {
+        const error = new Error(message)
+        error.type = 'warn'
+        return error
+    }
+
+    function UISwitchOptionsNode (config) {
+        RED.nodes.createNode(this, config)
+        const node = this
+
+        const group = RED.nodes.getNode(config.group)
+        if (!group) {
+            node.error(RED._('ui-switch-options.errors.noGroup'))
+            return
+        }
+        const base = group.getBase()
+
+        let options = normalizeOptions(config.options) || []
+        let index = 0
+
+        // After a redeploy, keep the last selection if it is still one of the configured options.
+        const previous = base.stores.data.get(node.id)
+        if (previous && previous.payload !== undefined) {
+            index = Math.max(findOption(options, previous.payload), 0)
+        }
+
+        function snapshot () {
+            const option = options[index]
+            return {
+                payload: option ? option.value : null,
+                label: option ? option.label : '',
+                index: option ? index : -1,
+                options
+            }
+        }
+
+        // The stored snapshot is what the Dashboard sends to every client that (re)loads the widget.
+        function save () {
+            base.stores.data.clear(node.id)
+            base.stores.data.save(base, node, snapshot())
+        }
+
+        function output (extra) {
+            const { payload, label, index } = snapshot()
+            return { ...extra, payload, label, index }
         }
 
         const evts = {
-            onAction: true,
-            onInput: function (msg, send, done) {
-                let storedData = base.stores.data.get(node.id) || {};
-                console.log('Received input message:', msg);
-                
-                // Handle updating options array
-                if (msg.options && Array.isArray(msg.options)) {
-                    options = msg.options; // Update local options array
-                    storedData.options ??= {}    // initialise if necessary
-                    //storedData.options = options;
-                    storedData.options = {...storedData.options, ...msg.options}
-                    base.stores.data.save(base, node, storedData); // Save new options
-                    console.log('Updated and saved new options array:', options);
+            onInput (msg, send) {
+                if (Object.hasOwn(msg, 'options')) {
+                    const next = normalizeOptions(msg.options)
+                    if (!next) throw warning(RED._('ui-switch-options.errors.invalidOptions'))
+                    const current = options[index]
+                    options = next
+                    const kept = current ? findOption(options, current.value) : -1
+                    index = kept === -1 ? 0 : kept
                 }
-                    
-                if (typeof msg.payload !== 'undefined') {
-                    var matchingOptionIndex = options.findIndex(opt => opt.value === msg.payload);
-                    if (matchingOptionIndex !== -1) {
-                      console.log('Calling updateFrontend with index:', matchingOptionIndex);
-                      try {
-                        updateFrontend(matchingOptionIndex);
-                        storedData.currentOptionIndex = matchingOptionIndex;
-                        base.stores.data.save(base, node, { currentOptionIndex: storedData.currentOptionIndex });
-                      } catch (error) {
-                        console.error('Error calling updateFrontend:', error);
-                      }
-                      console.log('updateFrontend should have been called');
+
+                let selected = false
+                if (msg.payload !== undefined) {
+                    const found = findOption(options, msg.payload)
+                    if (found === -1) {
+                        node.warn(RED._('ui-switch-options.errors.notFound', { value: String(msg.payload) }))
                     } else {
-                      // Emit a warning message to the Vue component
-                      node.send({ payload: 'Option not found in options array', topic: 'error' });
-                    }
-                  }
-            },
-            onSocket: {
-                'widget-load': function (conn, id) {
-                    if (id === node.id) {
-                        let storedData = base.stores.data.get(node.id) || {};
-                        const currentOptionIndex = storedData.currentOptionIndex || 0;
-                        const options = storedData.options || config.options || []; // Retrieve saved options
-                        
-                        // Send the saved index and options array to the client
-                        conn.emit(`widget-load:${id}`, { currentOptionIndex, options });
-                        console.log(`Sent currentOptionIndex and options to widget:`, currentOptionIndex, options);
-                    }
-                },
-                'switch-option': function (conn, id, selectedOptionValue) {
-                    if (id === node.id) {
-                        const matchingOptionIndex = options.findIndex(opt => opt.value === selectedOptionValue);
-                        if (matchingOptionIndex !== -1) {
-                            currentOptionIndex = matchingOptionIndex;
-                            let storedData = base.stores.data.get(node.id) || {};
-                            storedData.currentOptionIndex = currentOptionIndex;
-                            base.stores.data.save(base, node, storedData); // Save current index
-
-                            const selectedOption = options[currentOptionIndex];
-                            if (selectedOption) {
-                                node.send({
-                                    payload: selectedOption.value,
-                                    label: selectedOption.label
-                                });
-                                console.log(`Sending updated option value: ${selectedOption.value}`);
-                            }
-                        }
-                    }
-                },
-                'new-options': function (conn, { id, options }) {
-                    if (id === node.id && Array.isArray(options)) {
-                        // Update and save the new options array
-                        let storedData = base.stores.data.get(node.id) || {};
-                        storedData.options ??= {}    // initialise if necessary
-                        //storedData.options = options;
-                        storedData.options = {...storedData.options, ...options}
-                        base.stores.data.save(base, node, storedData);
-                        console.log(`Updated options from frontend: ${options}`);
-                        
-                        // Optionally send updated options to the frontend
-                        conn.emit(`widget-load:${id}`, { currentOptionIndex: storedData.currentOptionIndex, options });
+                        index = found
+                        selected = true
                     }
                 }
-            }
-        };
 
-        if (group) {
-            group.register(node, config, evts);
-        } else {
-            node.error('No group configured');
+                save()
+                // The Dashboard sends this msg to all clients after onInput, so it carries the full state.
+                Object.assign(msg, snapshot())
+                if (selected) send(output(msg.topic === undefined ? {} : { topic: msg.topic }))
+            },
+
+            // A click on previous or next in a dashboard
+            onChange (msg, value, conn) {
+                if (!value || typeof value !== 'object') return
+                let found = Number.isInteger(value.index) && options[value.index] && options[value.index].value === value.value ? value.index : -1
+                if (found === -1) found = findOption(options, value.value)
+                if (found === -1) return
+
+                index = found
+                save()
+                base.emit('widget-sync:' + node.id, snapshot(), node, [conn.id])
+                node.send(output(base.includeClientData && msg?._client ? { _client: msg._client } : {}))
+            }
         }
+
+        save()
+        group.register(node, config, evts)
     }
 
-    RED.nodes.registerType('ui-switch-options', UISwitchOptionsNode);
-};
+    RED.nodes.registerType('ui-switch-options', UISwitchOptionsNode)
+}

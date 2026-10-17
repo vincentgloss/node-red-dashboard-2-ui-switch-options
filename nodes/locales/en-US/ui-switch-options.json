@@ -1,7 +1,28 @@
 {
-    "ui-switch-options" : {
+    "ui-switch-options": {
         "label": {
-            "size": "Size"
+            "name": "Name",
+            "group": "Group",
+            "size": "Size",
+            "label": "Label",
+            "options": "Options",
+            "optionLabel": "Label",
+            "optionValue": "Value",
+            "prevIcon": "Prev icon",
+            "nextIcon": "Next icon",
+            "iconColor": "Icon color",
+            "iconSize": "Icon size",
+            "buttonColor": "Button color"
+        },
+        "placeholder": {
+            "label": "Text above the widget (optional, HTML allowed)",
+            "color": "e.g. red, #AEEA00, transparent",
+            "iconSize": "e.g. 24 or 24px"
+        },
+        "errors": {
+            "noGroup": "No group configured",
+            "invalidOptions": "msg.options must be an array of objects with a value, e.g. [{\"label\":\"On\",\"value\":\"on\"}]",
+            "notFound": "No option with the value \"__value__\""
         }
     }
 }

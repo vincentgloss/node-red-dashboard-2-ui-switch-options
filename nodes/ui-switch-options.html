@@ -3,128 +3,93 @@
         category: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.label.category'),
         color: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.colors.light'),
         defaults: {
-            name: { value: "" },
+            name: { value: '' },
             group: { type: 'ui-group', required: true },
             order: { value: 0 },
             width: {
                 value: 0,
                 validate: function (v) {
-                    const width = v || 0;
-                    const currentGroup = $('#node-input-group').val() || this.group;
-                    const groupNode = RED.nodes.node(currentGroup);
-                    const valid = !groupNode || +width <= +groupNode.width;
-                    $('#node-input-size').toggleClass('input-error', !valid);
-                    return valid;
+                    const width = v || 0
+                    const currentGroup = $('#node-input-group').val() || this.group
+                    const groupNode = RED.nodes.node(currentGroup)
+                    const valid = !groupNode || +width <= +groupNode.width
+                    $('#node-input-size').toggleClass('input-error', !valid)
+                    return valid
                 }
             },
             height: { value: 0 },
-            label: { value: "", required: false },
-            options: { value: [], required: true },
+            label: { value: '' },
+            options: {
+                value: [],
+                validate: function (v) { return Array.isArray(v) }
+            },
             prevIcon: { value: '' },
             nextIcon: { value: '' },
-            iconColor: { value: ''},
-            iconSize: { value: ''},
-            buttonColor: { value: ''},
+            iconColor: { value: '' },
+            iconSize: { value: '' },
+            buttonColor: { value: '' }
         },
         inputs: 1,
         outputs: 1,
-        icon: "font-awesome/fa-exchange",
-        paletteLabel: "switch option",
-        label: function() {
-            return this.name || "switch option";
+        icon: 'font-awesome/fa-exchange',
+        paletteLabel: 'switch option',
+        label: function () {
+            return this.name || 'switch option'
         },
-        
+
         oneditprepare: function () {
-            var node = this;
+            const node = this
 
             $('#node-input-size').elementSizer({
                 width: '#node-input-width',
                 height: '#node-input-height',
                 group: '#node-input-group'
-            });
+            })
 
-            // Initialize the editable list for options
             $('#node-input-options-list').editableList({
-                addItem: function(container, index, optionData) {
-                    var option = optionData || {label: "", value: ""};
-
-                    var row = $('<div/>').appendTo(container);
-
-                    $('<input/>', {
-                        type: 'text',
-                        placeholder: 'Option Label',
-                        style: 'width: 45%; margin-right: 10px;',
-                        class: 'node-input-option-label'
-                    }).appendTo(row).val(option.label);
-
-                    $('<input/>', {
-                        type: 'text',
-                        placeholder: 'Option Value',
-                        style: 'width: 45%;',
-                        class: 'node-input-option-value'
-                    }).appendTo(row).val(option.value);
+                addItem: function (container, index, option) {
+                    option = option || { label: '', value: '' }
+                    const row = $('<div/>', { style: 'display: flex; gap: 10px;' }).appendTo(container)
+                    $('<input/>', { type: 'text', class: 'node-input-option-label', style: 'flex: 1;', placeholder: node._('ui-switch-options.label.optionLabel') })
+                        .appendTo(row).val(option.label)
+                    $('<input/>', { type: 'text', class: 'node-input-option-value', style: 'flex: 1;', placeholder: node._('ui-switch-options.label.optionValue') })
+                        .appendTo(row).val(option.value)
                 },
+                header: $('<div/>', { style: 'display: flex; gap: 10px; padding-left: 28px; padding-right: 32px;' }).append(
+                    $('<div/>', { style: 'flex: 1;' }).text(node._('ui-switch-options.label.optionLabel')),
+                    $('<div/>', { style: 'flex: 1;' }).text(node._('ui-switch-options.label.optionValue'))
+                ),
                 sortable: true,
                 removable: true,
                 height: 'auto',
-                scrollOnAdd: true,
-                header: $('<div>').append(
-                    $.parseHTML(
-                        "<div style='width:40%; margin-left:20%; display:inline-grid;'>Label</div><div style='width:40%; display:inline-grid;'>Value</div>"
-                    )
-                ),
-            });
+                scrollOnAdd: true
+            })
 
-            // Load existing options into the editable list
-            (node.options || []).forEach(function(opt) {
-                $('#node-input-options-list').editableList('addItem', opt);
-            });
-
-            // Set the label input value
-            $('#node-input-label').val(node.label || '');
-
-            // Set icon inputs
-            $('#node-input-prev-icon').val(node.prevIcon );
-            $('#node-input-next-icon').val(node.nextIcon );
-            // Set icon & button color
-            $('#node-input-icon-color').val(node.iconColor );
-            $('#node-input-icon-size').val(node.iconSize );
-            $('#node-input-button-color').val(node.buttonColor );
+            for (const option of node.options || []) {
+                $('#node-input-options-list').editableList('addItem', option)
+            }
         },
 
         oneditsave: function () {
-            var node = this;
-
-            // Update label with custom or default value
-            this.label = $('#node-input-label').val() || "";
-
-            // Save the options from the editable list
-            this.options = [];
-            $('#node-input-options-list').editableList('items').each(function() {
-                var label = $(this).find('.node-input-option-label').val();
-                var value = $(this).find('.node-input-option-value').val();
-                if (label && value) {
-                    node.options.push({label: label, value: value});
-                }
-            });
-
-            // Save icon settings
-            this.prevIcon = $('#node-input-prev-icon').val() || 'chevron-double-left';
-            this.nextIcon = $('#node-input-next-icon').val() || 'chevron-double-right';
-            this.iconColor = $('#node-input-icon-color').val() || '';
-            this.iconSize = $('#node-input-icon-size').val() || '';
-            this.buttonColor = $('#node-input-button-color').val() || '';
+            const node = this
+            node.options = []
+            $('#node-input-options-list').editableList('items').each(function () {
+                const label = $(this).find('.node-input-option-label').val()
+                const value = $(this).find('.node-input-option-value').val()
+                // An option needs a value. Without a label the value is shown.
+                if (value !== '') node.options.push({ label: label || value, value })
+            })
         }
-    });
+    })
 </script>
 
 <script type="text/html" data-template-name="ui-switch-options">
     <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="ui-switch-options.label.name"></span></label>
+        <input type="text" id="node-input-name" data-i18n="[placeholder]ui-switch-options.label.name">
     </div>
     <div class="form-row">
-        <label for="node-input-group"><i class="fa fa-table"></i> Group</label>
+        <label for="node-input-group"><i class="fa fa-table"></i> <span data-i18n="ui-switch-options.label.group"></span></label>
         <input type="text" id="node-input-group">
     </div>
     <div class="form-row">
@@ -134,58 +99,31 @@
         <button class="editor-button" id="node-input-size"></button>
     </div>
     <div class="form-row">
-        <label for="node-input-options-list"><i class="fa fa-list"></i> Options</label>
-        <div id="node-input-options-list" style="margin-top: 10px;"></div>
+        <label for="node-input-label"><i class="fa fa-i-cursor"></i> <span data-i18n="ui-switch-options.label.label"></span></label>
+        <input type="text" id="node-input-label" data-i18n="[placeholder]ui-switch-options.placeholder.label">
+    </div>
+    <div class="form-row node-input-options-container-row">
+        <label><i class="fa fa-list"></i> <span data-i18n="ui-switch-options.label.options"></span></label>
+        <ol id="node-input-options-list"></ol>
     </div>
     <div class="form-row">
-        <label for="node-input-label"><i class="fa fa-tag"></i> Label</label>
-        <input type="text" id="node-input-label" placeholder="Widget Label">
+        <label for="node-input-prevIcon"><i class="fa fa-arrow-left"></i> <span data-i18n="ui-switch-options.label.prevIcon"></span></label>
+        <input type="text" id="node-input-prevIcon" placeholder="chevron-double-left">
     </div>
     <div class="form-row">
-        <label for="node-input-prev-icon"><i class="fa fa-arrow-left"></i> Prev Icon</label>
-        <input type="text" id="node-input-prev-icon" placeholder="Material Icon Name">
+        <label for="node-input-nextIcon"><i class="fa fa-arrow-right"></i> <span data-i18n="ui-switch-options.label.nextIcon"></span></label>
+        <input type="text" id="node-input-nextIcon" placeholder="chevron-double-right">
     </div>
     <div class="form-row">
-        <label for="node-input-next-icon"><i class="fa fa-arrow-right"></i> Next Icon</label>
-        <input type="text" id="node-input-next-icon" placeholder="Material Icon Name">
+        <label for="node-input-iconColor"><i class="fa fa-paint-brush"></i> <span data-i18n="ui-switch-options.label.iconColor"></span></label>
+        <input type="text" id="node-input-iconColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
     </div>
-     <div class="form-row" style="display: flex; align-items: center; justify-content: space-between;">
-        <div style="flex: 1; margin-right: 10px; display: flex; align-items: center;">
-            <label for="node-input-icon-color"><i class="fa fa-info-circle"></i> Icon Color</label>
-            <input type="text" id="node-input-icon-color" placeholder="white" style="width: 40%;">
-        </div>
-        <div style="flex: 1; display: flex; align-items: center;">
-            <label for="node-input-icon-size"><i class="fa fa-arrows-alt"></i> Icon Size</label>
-            <input type="text" id="node-input-icon-size" placeholder="px" style="width: 40%;">
-        </div>
-    </div>
-
     <div class="form-row">
-        <label for="node-input-button-color"><i class="fa fa-hand-pointer-o"></i> Button color</label>
-        <input type="text" id="node-input-button-color" placeholder="">
+        <label for="node-input-iconSize"><i class="fa fa-arrows-alt"></i> <span data-i18n="ui-switch-options.label.iconSize"></span></label>
+        <input type="text" id="node-input-iconSize" data-i18n="[placeholder]ui-switch-options.placeholder.iconSize">
     </div>
-</script>
-
-<script type="text/html" data-help-name="ui-switch-options">
-    <div>
-        <p><strong>ui-switch-options</strong> node allows you to create a widget that lets users switch between different options using "Previous" and "Next" buttons. It's designed to provide a simple way to navigate through a list of options and return the selected value.</p>
-        
-        <h3>Inputs</h3>
-        <ul>
-            <li><strong>payload</strong> (string): A valid value of the option to be selected. This is also emitted whenever an option is switched.</li>
-        </ul>
-        
-        <h3>Configuration</h3>
-        <ul>
-            <li><strong>Name</strong> - The name of the node, which helps identify it in the Node-RED editor.</li>
-            <li><strong>Group</strong> - The display group in which the widget will be shown on the dashboard.</li>
-            <li><strong>Size</strong> - The dimensions of the widget. This will automatically adjust based on the group configuration.</li>
-            <li><strong>Options</strong> - A list of options for the widget. Each option should have a <code>label</code> (accepts plain html) and a <code>value</code>. These are the options users can switch between.</li>
-            <li><strong>Label</strong> - A text label (optional, accepts plain html) that appears above the widget on the dashboard.</li>
-            <li><strong>Prev Icon</strong> - If provided, this <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design icon</a> will replace the default <strong>prev</strong> icon. No need to include the mdi prefix.</dd>
-            <li><strong>Next Icon</strong> - If provided, this <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design icon</a> will replace the default <strong>next</strong> icon. No need to include the mdi prefix.</dd>
-            <li><strong>Icon Color</strong> - The color of the <strong>prev</strong>  and <strong>next</strong> icons. The colours may be recognised names such as "red" or "skyblue" or may be numerically specified, eg #AEEA00. The set of named colours can be found <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">here</a>.</dd>
-            <li><strong>Icon Size</strong> - The size of the <strong>prev</strong>  and <strong>next</strong>  icons. The size may be numerically specified in px.</dd>
-            <li><strong>Button Color</strong> - The color of the <strong>prev</strong>  and <strong>next</strong> buttons. The colours may be recognised names such as "red" or "skyblue" or may be numerically specified, eg #AEEA00. The set of named colours can be found <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">here</a>.</dd>
-        </ul>
+    <div class="form-row">
+        <label for="node-input-buttonColor"><i class="fa fa-hand-pointer-o"></i> <span data-i18n="ui-switch-options.label.buttonColor"></span></label>
+        <input type="text" id="node-input-buttonColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
+    </div>
 </script>
