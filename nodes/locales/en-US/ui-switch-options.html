@@ -3,14 +3,26 @@
         Every switch sends the value of the selected option.</p>
 
     <h3>Inputs</h3>
+    <p>First <code>msg.options</code> and <code>msg.ui_update</code> are applied.
+        Then one option is selected: by <code>msg.index</code>, otherwise by <code>msg.step</code>, otherwise by <code>msg.payload</code>.</p>
     <dl class="message-properties">
-        <dt class="optional">payload <span class="property-type">string | number | boolean</span></dt>
-        <dd>Selects the option with this value. A number also finds an option whose value is the same text,
-            so <code>1</code> selects the option <code>"1"</code>. If no option matches, the node shows a warning and nothing changes.</dd>
+        <dt class="optional">payload <span class="property-type">any</span></dt>
+        <dd>Selects the option with this value. Text and numbers match each other, so <code>1</code> selects the option <code>"1"</code>
+            and <code>"true"</code> the option <code>true</code>. Objects match options with the same JSON.
+            If no option matches, the node shows a warning and nothing changes.</dd>
+        <dt class="optional">index <span class="property-type">number</span></dt>
+        <dd>Selects the option at this position, starting at 0.</dd>
+        <dt class="optional">step <span class="property-type">number</span></dt>
+        <dd>Moves by this many options: <code>1</code> is next, <code>-1</code> previous. Follows the setting for the ends.</dd>
         <dt class="optional">options <span class="property-type">array</span></dt>
-        <dd>Replaces the options, for example <code>[{"label":"Off","value":"off"},{"label":"On","value":"on"}]</code>.
-            Each option needs a <code>value</code>; without a <code>label</code> the value is shown.
+        <dd>Replaces the options. Either plain values, e.g. <code>["Off","On"]</code> or <code>[18,20,22]</code>,
+            or objects, e.g. <code>[{"label":"Off","value":"off"},{"label":"On","value":"on"}]</code>.
+            Without a <code>label</code> the value is shown, without a <code>value</code> the label is sent.
             The current option stays selected if it is still in the list, otherwise the first one.</dd>
+        <dt class="optional">ui_update <span class="property-type">object</span></dt>
+        <dd>Changes the appearance: <code>label</code>, <code>prevIcon</code>, <code>nextIcon</code>, <code>iconColor</code>,
+            <code>iconSize</code>, <code>buttonColor</code>, e.g. <code>{"label":"Mode","buttonColor":"red"}</code>.
+            <code>null</code> returns to the setting from the editor. <code>class</code> adds CSS classes.</dd>
         <dt class="optional">enabled <span class="property-type">boolean</span></dt>
         <dd><code>false</code> disables the buttons, <code>true</code> enables them again.</dd>
         <dt class="optional">visible <span class="property-type">boolean</span></dt>
@@ -22,7 +34,7 @@
     <h3>Outputs</h3>
     <dl class="message-properties">
         <dt>payload <span class="property-type">any</span></dt>
-        <dd>The value of the selected option.</dd>
+        <dd>The value of the selected option, with its type from the editor (text, number, boolean or JSON).</dd>
         <dt>label <span class="property-type">string</span></dt>
         <dd>The label of the selected option.</dd>
         <dt>index <span class="property-type">number</span></dt>
@@ -32,9 +44,10 @@
     </dl>
 
     <h3>Details</h3>
-    <p>A message is sent when somebody switches in a dashboard, and when an input message selects an option.
+    <p>A message is sent when somebody switches in a dashboard. When an input message selects an option,
+        a message is only sent if <i>Send a message when an input message selects an option</i> is checked.
         All open dashboards show the same option.</p>
-    <p>After a redeploy the widget starts with the options from the editor again.
+    <p>After a redeploy the widget starts with the options and appearance from the editor again.
         The selected option is kept if it is still one of them.</p>
 
     <h3>Configuration</h3>
@@ -44,7 +57,12 @@
         <dt>Label</dt>
         <dd>Optional text above the widget. HTML is allowed.</dd>
         <dt>Options</dt>
-        <dd>The list to step through. Each option has a label (shown, HTML allowed) and a value (sent).</dd>
+        <dd>The list to step through. Each option has a label (shown, HTML allowed) and a value (sent).
+            The value can be text, a number, a boolean or JSON.</dd>
+        <dt>After the last option, start again at the first</dt>
+        <dd>If unchecked, the buttons stop at the first and the last option.</dd>
+        <dt>Send a message when an input message selects an option</dt>
+        <dd>Leave unchecked if the widget only shows a state, so a message cannot loop back.</dd>
         <dt>Prev icon, Next icon</dt>
         <dd>Name of a <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design icon</a>
             without the <code>mdi-</code> prefix, e.g. <code>chevron-left</code>.

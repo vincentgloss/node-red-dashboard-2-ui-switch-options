@@ -1,86 +1,112 @@
 <script type="text/javascript">
-    RED.nodes.registerType('ui-switch-options', {
-        category: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.label.category'),
-        color: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.colors.light'),
-        defaults: {
-            name: { value: '' },
-            group: { type: 'ui-group', required: true },
-            order: { value: 0 },
-            width: {
-                value: 0,
-                validate: function (v) {
-                    const width = v || 0
-                    const currentGroup = $('#node-input-group').val() || this.group
-                    const groupNode = RED.nodes.node(currentGroup)
-                    const valid = !groupNode || +width <= +groupNode.width
-                    $('#node-input-size').toggleClass('input-error', !valid)
-                    return valid
+    (function () {
+        // Checks an option value stored as text against its type (str, num, bool, json)
+        function validValue (option) {
+            const value = option.value
+            switch (option.valueType) {
+                case 'num': return typeof value === 'number' || (String(value).trim() !== '' && !isNaN(Number(value)))
+                case 'bool': return value === true || value === false || value === 'true' || value === 'false'
+                case 'json':
+                    try { JSON.parse(value); return true } catch (e) { return false }
+                default: return true
+            }
+        }
+
+        RED.nodes.registerType('ui-switch-options', {
+            category: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.label.category'),
+            color: RED._('@flowfuse/node-red-dashboard/ui-base:ui-base.colors.light'),
+            defaults: {
+                name: { value: '' },
+                group: { type: 'ui-group', required: true },
+                order: { value: 0 },
+                width: {
+                    value: 0,
+                    validate: function (v) {
+                        const width = v || 0
+                        const currentGroup = $('#node-input-group').val() || this.group
+                        const groupNode = RED.nodes.node(currentGroup)
+                        const valid = !groupNode || +width <= +groupNode.width
+                        $('#node-input-size').toggleClass('input-error', !valid)
+                        return valid
+                    }
+                },
+                height: { value: 0 },
+                label: { value: '' },
+                options: {
+                    value: [],
+                    validate: function (v) { return Array.isArray(v) && v.every(validValue) }
+                },
+                wrap: { value: true },
+                passthru: { value: false },
+                prevIcon: { value: '' },
+                nextIcon: { value: '' },
+                iconColor: { value: '' },
+                iconSize: { value: '' },
+                buttonColor: { value: '' }
+            },
+            inputs: 1,
+            outputs: 1,
+            icon: 'font-awesome/fa-exchange',
+            paletteLabel: 'switch option',
+            label: function () {
+                return this.name || 'switch option'
+            },
+
+            oneditprepare: function () {
+                const node = this
+
+                $('#node-input-size').elementSizer({
+                    width: '#node-input-width',
+                    height: '#node-input-height',
+                    group: '#node-input-group'
+                })
+
+                // Nodes from version 1.0 have no passthru setting and always passed input selections on.
+                if (node.passthru === undefined) $('#node-input-passthru').prop('checked', true)
+                if (node.wrap === undefined) $('#node-input-wrap').prop('checked', true)
+
+                $('#node-input-options-list').editableList({
+                    addItem: function (container, index, option) {
+                        option = option || { label: '', value: '', valueType: 'str' }
+                        const row = $('<div/>', { style: 'display: flex; gap: 10px;' }).appendTo(container)
+                        $('<input/>', { type: 'text', class: 'node-input-option-label', style: 'flex: 1;', placeholder: node._('ui-switch-options.label.optionLabel') })
+                            .appendTo(row).val(option.label)
+                        const value = $('<input/>', { type: 'text', class: 'node-input-option-value', style: 'width: 100%;' })
+                        $('<div/>', { style: 'flex: 1;' }).append(value).appendTo(row)
+                        value.typedInput({ default: 'str', types: ['str', 'num', 'bool', 'json'] })
+                        value.typedInput('type', option.valueType || 'str')
+                        value.typedInput('value', typeof option.value === 'string' ? option.value : String(option.value))
+                    },
+                    header: $('<div/>', { style: 'display: flex; gap: 10px; padding-left: 28px; padding-right: 32px;' }).append(
+                        $('<div/>', { style: 'flex: 1;' }).text(node._('ui-switch-options.label.optionLabel')),
+                        $('<div/>', { style: 'flex: 1;' }).text(node._('ui-switch-options.label.optionValue'))
+                    ),
+                    sortable: true,
+                    removable: true,
+                    height: 'auto',
+                    scrollOnAdd: true
+                })
+
+                for (const option of node.options || []) {
+                    $('#node-input-options-list').editableList('addItem', option)
                 }
             },
-            height: { value: 0 },
-            label: { value: '' },
-            options: {
-                value: [],
-                validate: function (v) { return Array.isArray(v) }
-            },
-            prevIcon: { value: '' },
-            nextIcon: { value: '' },
-            iconColor: { value: '' },
-            iconSize: { value: '' },
-            buttonColor: { value: '' }
-        },
-        inputs: 1,
-        outputs: 1,
-        icon: 'font-awesome/fa-exchange',
-        paletteLabel: 'switch option',
-        label: function () {
-            return this.name || 'switch option'
-        },
 
-        oneditprepare: function () {
-            const node = this
-
-            $('#node-input-size').elementSizer({
-                width: '#node-input-width',
-                height: '#node-input-height',
-                group: '#node-input-group'
-            })
-
-            $('#node-input-options-list').editableList({
-                addItem: function (container, index, option) {
-                    option = option || { label: '', value: '' }
-                    const row = $('<div/>', { style: 'display: flex; gap: 10px;' }).appendTo(container)
-                    $('<input/>', { type: 'text', class: 'node-input-option-label', style: 'flex: 1;', placeholder: node._('ui-switch-options.label.optionLabel') })
-                        .appendTo(row).val(option.label)
-                    $('<input/>', { type: 'text', class: 'node-input-option-value', style: 'flex: 1;', placeholder: node._('ui-switch-options.label.optionValue') })
-                        .appendTo(row).val(option.value)
-                },
-                header: $('<div/>', { style: 'display: flex; gap: 10px; padding-left: 28px; padding-right: 32px;' }).append(
-                    $('<div/>', { style: 'flex: 1;' }).text(node._('ui-switch-options.label.optionLabel')),
-                    $('<div/>', { style: 'flex: 1;' }).text(node._('ui-switch-options.label.optionValue'))
-                ),
-                sortable: true,
-                removable: true,
-                height: 'auto',
-                scrollOnAdd: true
-            })
-
-            for (const option of node.options || []) {
-                $('#node-input-options-list').editableList('addItem', option)
+            oneditsave: function () {
+                const node = this
+                node.options = []
+                $('#node-input-options-list').editableList('items').each(function () {
+                    const label = $(this).find('.node-input-option-label').val()
+                    const input = $(this).find('.node-input-option-value')
+                    const valueType = input.typedInput('type')
+                    const value = input.typedInput('value')
+                    // An option needs a value. Without a label the value is shown.
+                    if (value === '') return
+                    node.options.push({ label: label || value, value, valueType })
+                })
             }
-        },
-
-        oneditsave: function () {
-            const node = this
-            node.options = []
-            $('#node-input-options-list').editableList('items').each(function () {
-                const label = $(this).find('.node-input-option-label').val()
-                const value = $(this).find('.node-input-option-value').val()
-                // An option needs a value. Without a label the value is shown.
-                if (value !== '') node.options.push({ label: label || value, value })
-            })
-        }
-    })
+        })
+    })()
 </script>
 
 <script type="text/html" data-template-name="ui-switch-options">
@@ -105,6 +131,18 @@
     <div class="form-row node-input-options-container-row">
         <label><i class="fa fa-list"></i> <span data-i18n="ui-switch-options.label.options"></span></label>
         <ol id="node-input-options-list"></ol>
+    </div>
+    <div class="form-row">
+        <label for="node-input-wrap" style="width: auto;">
+            <input type="checkbox" id="node-input-wrap" style="width: auto; margin: 0 6px 0 0;">
+            <span data-i18n="ui-switch-options.label.wrap"></span>
+        </label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-passthru" style="width: auto;">
+            <input type="checkbox" id="node-input-passthru" style="width: auto; margin: 0 6px 0 0;">
+            <span data-i18n="ui-switch-options.label.passthru"></span>
+        </label>
     </div>
     <div class="form-row">
         <label for="node-input-prevIcon"><i class="fa fa-arrow-left"></i> <span data-i18n="ui-switch-options.label.prevIcon"></span></label>

@@ -1,13 +1,13 @@
 <template>
     <!-- Newer Dashboard versions hide the widget themselves, older ones (1.23) need v-show -->
     <div v-show="state?.visible !== false" class="option-switcher-wrapper">
-        <h2 v-if="props.label" v-html="props.label" />
+        <h2 v-if="settings.label" v-html="settings.label" />
         <div class="option-switcher">
-            <v-btn :disabled="!canSwitch" :style="buttonStyle" aria-label="Previous option" @click="step(-1)">
+            <v-btn :disabled="!canPrev" :style="buttonStyle" aria-label="Previous option" @click="step(-1)">
                 <v-icon :color="iconColor" :size="iconSize">{{ prevIcon }}</v-icon>
             </v-btn>
             <span class="current-option" aria-live="polite" v-html="currentLabel" />
-            <v-btn :disabled="!canSwitch" :style="buttonStyle" aria-label="Next option" @click="step(1)">
+            <v-btn :disabled="!canNext" :style="buttonStyle" aria-label="Next option" @click="step(1)">
                 <v-icon :color="iconColor" :size="iconSize">{{ nextIcon }}</v-icon>
             </v-btn>
         </div>
@@ -32,33 +32,47 @@ export default {
     data () {
         return {
             options: Array.isArray(this.props.options) ? this.props.options : [],
-            index: 0
+            index: 0,
+            // Overrides from msg.ui_update
+            appearance: {}
         }
     },
     computed: {
+        settings () {
+            return { ...this.props, ...this.appearance }
+        },
         current () {
             return this.options[this.index]
         },
         currentLabel () {
             return this.current ? this.current.label : 'No option available'
         },
+        wrap () {
+            return this.props.wrap !== false
+        },
         canSwitch () {
             return this.state?.enabled !== false && this.options.length > 1
         },
+        canPrev () {
+            return this.canSwitch && (this.wrap || this.index > 0)
+        },
+        canNext () {
+            return this.canSwitch && (this.wrap || this.index < this.options.length - 1)
+        },
         prevIcon () {
-            return mdiIcon(this.props.prevIcon, 'chevron-double-left')
+            return mdiIcon(this.settings.prevIcon, 'chevron-double-left')
         },
         nextIcon () {
-            return mdiIcon(this.props.nextIcon, 'chevron-double-right')
+            return mdiIcon(this.settings.nextIcon, 'chevron-double-right')
         },
         iconColor () {
-            return this.props.iconColor || undefined
+            return this.settings.iconColor || undefined
         },
         iconSize () {
-            return this.props.iconSize || undefined
+            return this.settings.iconSize || undefined
         },
         buttonStyle () {
-            const color = this.props.buttonColor
+            const color = this.settings.buttonColor
             if (!color) return {}
             return color === 'transparent'
                 ? { 'background-color': 'transparent', 'box-shadow': 'none' }
@@ -71,10 +85,11 @@ export default {
         this.$dataTracker(this.id, this.apply, this.apply, null, this.apply)
     },
     methods: {
-        // Every message from the node carries the full state: options, index and payload.
+        // Every message from the node carries the full state: options, index, payload and appearance.
         apply (msg) {
             if (!msg) return
             if (Array.isArray(msg.options)) this.options = msg.options
+            if (msg.appearance && typeof msg.appearance === 'object') this.appearance = msg.appearance
             if (Number.isInteger(msg.index)) {
                 this.index = msg.index
             } else if (msg.payload !== undefined) {
@@ -84,8 +99,8 @@ export default {
             if (this.index >= this.options.length) this.index = 0
         },
         step (direction) {
+            if (!(direction < 0 ? this.canPrev : this.canNext)) return
             const count = this.options.length
-            if (!this.canSwitch) return
             this.index = (this.index + direction + count) % count
             this.$socket.emit('widget-change', this.id, { index: this.index, value: this.current.value })
         }

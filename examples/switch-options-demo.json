@@ -69,6 +69,16 @@
         "groupType": "default"
     },
     {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000030",
+        "type": "comment",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Heating mode",
+        "info": "Text values. After \"Boost\" comes \"Off\" again. Input messages change the widget without sending a message.",
+        "x": 190,
+        "y": 40,
+        "wires": []
+    },
+    {
         "id": "5c0e7a1b2d3f4e60a7b8000000000006",
         "type": "ui-switch-options",
         "z": "5c0e7a1b2d3f4e60a7b8000000000001",
@@ -81,65 +91,34 @@
         "options": [
             {
                 "label": "Off",
-                "value": "off"
+                "value": "off",
+                "valueType": "str"
             },
             {
                 "label": "Eco",
-                "value": "eco"
+                "value": "eco",
+                "valueType": "str"
             },
             {
                 "label": "Comfort",
-                "value": "comfort"
+                "value": "comfort",
+                "valueType": "str"
             },
             {
                 "label": "Boost",
-                "value": "boost"
+                "value": "boost",
+                "valueType": "str"
             }
         ],
+        "wrap": true,
+        "passthru": false,
         "prevIcon": "",
         "nextIcon": "",
         "iconColor": "",
         "iconSize": "",
         "buttonColor": "",
-        "x": 480,
-        "y": 160,
-        "wires": [
-            [
-                "5c0e7a1b2d3f4e60a7b8000000000020"
-            ]
-        ]
-    },
-    {
-        "id": "5c0e7a1b2d3f4e60a7b8000000000007",
-        "type": "ui-switch-options",
-        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
-        "name": "Color",
-        "group": "5c0e7a1b2d3f4e60a7b8000000000005",
-        "order": 2,
-        "width": 0,
-        "height": 0,
-        "label": "Color <small>(own icons and colors)</small>",
-        "options": [
-            {
-                "label": "<span style=\"color:#e53935\">Red</span>",
-                "value": "red"
-            },
-            {
-                "label": "<span style=\"color:#43a047\">Green</span>",
-                "value": "green"
-            },
-            {
-                "label": "<span style=\"color:#1e88e5\">Blue</span>",
-                "value": "blue"
-            }
-        ],
-        "prevIcon": "chevron-left",
-        "nextIcon": "chevron-right",
-        "iconColor": "#0094ce",
-        "iconSize": "32",
-        "buttonColor": "transparent",
-        "x": 480,
-        "y": 420,
+        "x": 500,
+        "y": 260,
         "wires": [
             [
                 "5c0e7a1b2d3f4e60a7b8000000000020"
@@ -150,7 +129,7 @@
         "id": "5c0e7a1b2d3f4e60a7b8000000000008",
         "type": "inject",
         "z": "5c0e7a1b2d3f4e60a7b8000000000001",
-        "name": "Select \"Comfort\"",
+        "name": "Select \"comfort\"",
         "props": [
             {
                 "p": "payload",
@@ -163,8 +142,83 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "x": 180,
+        "x": 190,
         "y": 80,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000021",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Select position 0",
+        "props": [
+            {
+                "p": "index",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 120,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000022",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Next",
+        "props": [
+            {
+                "p": "step",
+                "v": "1",
+                "vt": "num"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 160,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000023",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Previous",
+        "props": [
+            {
+                "p": "step",
+                "v": "-1",
+                "vt": "num"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 200,
         "wires": [
             [
                 "5c0e7a1b2d3f4e60a7b8000000000006"
@@ -175,11 +229,11 @@
         "id": "5c0e7a1b2d3f4e60a7b8000000000009",
         "type": "inject",
         "z": "5c0e7a1b2d3f4e60a7b8000000000001",
-        "name": "Replace options",
+        "name": "Plain list as options",
         "props": [
             {
                 "p": "options",
-                "v": "[{\"label\":\"Low\",\"value\":1},{\"label\":\"Medium\",\"value\":2},{\"label\":\"High\",\"value\":3}]",
+                "v": "[\"Low\",\"Medium\",\"High\"]",
                 "vt": "json"
             }
         ],
@@ -188,8 +242,8 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "x": 180,
-        "y": 120,
+        "x": 190,
+        "y": 240,
         "wires": [
             [
                 "5c0e7a1b2d3f4e60a7b8000000000006"
@@ -213,8 +267,58 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "x": 180,
-        "y": 160,
+        "x": 190,
+        "y": 280,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000024",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "New label and colors",
+        "props": [
+            {
+                "p": "ui_update",
+                "v": "{\"label\":\"Heating <i>(changed)</i>\",\"prevIcon\":\"minus\",\"nextIcon\":\"plus\",\"buttonColor\":\"#43a047\",\"iconColor\":\"white\"}",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 320,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000025",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Editor label and colors",
+        "props": [
+            {
+                "p": "ui_update",
+                "v": "{\"label\":null,\"prevIcon\":null,\"nextIcon\":null,\"buttonColor\":null,\"iconColor\":null}",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 360,
         "wires": [
             [
                 "5c0e7a1b2d3f4e60a7b8000000000006"
@@ -238,8 +342,8 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "x": 180,
-        "y": 200,
+        "x": 190,
+        "y": 400,
         "wires": [
             [
                 "5c0e7a1b2d3f4e60a7b8000000000006"
@@ -263,8 +367,8 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "x": 180,
-        "y": 240,
+        "x": 190,
+        "y": 440,
         "wires": [
             [
                 "5c0e7a1b2d3f4e60a7b8000000000006"
@@ -288,8 +392,8 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "x": 180,
-        "y": 280,
+        "x": 190,
+        "y": 480,
         "wires": [
             [
                 "5c0e7a1b2d3f4e60a7b8000000000006"
@@ -313,11 +417,195 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "x": 180,
-        "y": 320,
+        "x": 190,
+        "y": 520,
         "wires": [
             [
                 "5c0e7a1b2d3f4e60a7b8000000000006"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000031",
+        "type": "comment",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Temperature",
+        "info": "Number values, stops at 18 and 24. Input messages also send the selected value.",
+        "x": 190,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000016",
+        "type": "ui-switch-options",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Temperature",
+        "group": "5c0e7a1b2d3f4e60a7b8000000000005",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "label": "Temperature",
+        "options": [
+            {
+                "label": "18 °C",
+                "value": "18",
+                "valueType": "num"
+            },
+            {
+                "label": "20 °C",
+                "value": "20",
+                "valueType": "num"
+            },
+            {
+                "label": "22 °C",
+                "value": "22",
+                "valueType": "num"
+            },
+            {
+                "label": "24 °C",
+                "value": "24",
+                "valueType": "num"
+            }
+        ],
+        "wrap": false,
+        "passthru": true,
+        "prevIcon": "minus",
+        "nextIcon": "plus",
+        "iconColor": "",
+        "iconSize": "",
+        "buttonColor": "",
+        "x": 500,
+        "y": 660,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000020"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000026",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Select 22",
+        "props": [
+            {
+                "p": "payload",
+                "v": "22",
+                "vt": "num"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 620,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000016"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000027",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Warmer",
+        "props": [
+            {
+                "p": "step",
+                "v": "1",
+                "vt": "num"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 660,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000016"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000028",
+        "type": "inject",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Colder",
+        "props": [
+            {
+                "p": "step",
+                "v": "-1",
+                "vt": "num"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 700,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000016"
+            ]
+        ]
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000032",
+        "type": "comment",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Color",
+        "info": "HTML labels, own icons and colors, transparent buttons.",
+        "x": 190,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "5c0e7a1b2d3f4e60a7b8000000000007",
+        "type": "ui-switch-options",
+        "z": "5c0e7a1b2d3f4e60a7b8000000000001",
+        "name": "Color",
+        "group": "5c0e7a1b2d3f4e60a7b8000000000005",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "label": "Color <small>(own icons and colors)</small>",
+        "options": [
+            {
+                "label": "<span style=\"color:#e53935\">Red</span>",
+                "value": "red",
+                "valueType": "str"
+            },
+            {
+                "label": "<span style=\"color:#43a047\">Green</span>",
+                "value": "green",
+                "valueType": "str"
+            },
+            {
+                "label": "<span style=\"color:#1e88e5\">Blue</span>",
+                "value": "blue",
+                "valueType": "str"
+            }
+        ],
+        "wrap": true,
+        "passthru": false,
+        "prevIcon": "chevron-left",
+        "nextIcon": "chevron-right",
+        "iconColor": "#0094ce",
+        "iconSize": "32",
+        "buttonColor": "transparent",
+        "x": 500,
+        "y": 800,
+        "wires": [
+            [
+                "5c0e7a1b2d3f4e60a7b8000000000020"
             ]
         ]
     },
@@ -338,8 +626,8 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "x": 180,
-        "y": 420,
+        "x": 190,
+        "y": 800,
         "wires": [
             [
                 "5c0e7a1b2d3f4e60a7b8000000000007"
@@ -359,8 +647,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 730,
-        "y": 280,
+        "x": 760,
+        "y": 520,
         "wires": []
     }
 ]

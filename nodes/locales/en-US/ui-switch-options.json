@@ -8,6 +8,8 @@
             "options": "Options",
             "optionLabel": "Label",
             "optionValue": "Value",
+            "wrap": "After the last option, start again at the first",
+            "passthru": "Send a message when an input message selects an option",
             "prevIcon": "Prev icon",
             "nextIcon": "Next icon",
             "iconColor": "Icon color",
@@ -21,8 +23,14 @@
         },
         "errors": {
             "noGroup": "No group configured",
-            "invalidOptions": "msg.options must be an array of objects with a value, e.g. [{\"label\":\"On\",\"value\":\"on\"}]",
-            "notFound": "No option with the value \"__value__\""
+            "invalidValue": "Option \"__label__\" skipped: __error__",
+            "invalidOptions": "msg.options must be an array of values or of objects with value and label, e.g. [\"Off\",\"On\"] or [{\"label\":\"On\",\"value\":\"on\"}]",
+            "notFound": "No option with the value __value__",
+            "invalidIndex": "msg.index __index__ is not a position between 0 and the number of options (__count__) minus 1",
+            "invalidStep": "msg.step __step__ is not a whole number",
+            "invalidUiUpdate": "msg.ui_update must be an object, e.g. {\"label\":\"Mode\"}",
+            "unknownUiUpdate": "msg.ui_update.__key__ is ignored. Possible: __keys__",
+            "invalidUiUpdateValue": "msg.ui_update.__key__ must be text, a number or null"
         }
     }
 }

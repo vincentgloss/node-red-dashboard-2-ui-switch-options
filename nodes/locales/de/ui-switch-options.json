@@ -8,6 +8,8 @@
             "options": "Optionen",
             "optionLabel": "Beschriftung",
             "optionValue": "Wert",
+            "wrap": "Nach der letzten Option wieder bei der ersten beginnen",
+            "passthru": "Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt",
             "prevIcon": "Icon zurück",
             "nextIcon": "Icon weiter",
             "iconColor": "Icon-Farbe",
@@ -21,8 +23,14 @@
         },
         "errors": {
             "noGroup": "Keine Gruppe konfiguriert",
-            "invalidOptions": "msg.options muss ein Array aus Objekten mit value sein, z. B. [{\"label\":\"An\",\"value\":\"on\"}]",
-            "notFound": "Keine Option mit dem Wert \"__value__\""
+            "invalidValue": "Option \"__label__\" übersprungen: __error__",
+            "invalidOptions": "msg.options muss ein Array aus Werten oder aus Objekten mit value und label sein, z. B. [\"Aus\",\"An\"] oder [{\"label\":\"An\",\"value\":\"on\"}]",
+            "notFound": "Keine Option mit dem Wert __value__",
+            "invalidIndex": "msg.index __index__ ist keine Position zwischen 0 und der Anzahl der Optionen (__count__) minus 1",
+            "invalidStep": "msg.step __step__ ist keine ganze Zahl",
+            "invalidUiUpdate": "msg.ui_update muss ein Objekt sein, z. B. {\"label\":\"Modus\"}",
+            "unknownUiUpdate": "msg.ui_update.__key__ wird ignoriert. Möglich: __keys__",
+            "invalidUiUpdateValue": "msg.ui_update.__key__ muss Text, eine Zahl oder null sein"
         }
     }
 }

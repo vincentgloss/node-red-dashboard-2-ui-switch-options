@@ -3,14 +3,26 @@
         Bei jedem Umschalten wird der Wert der gewählten Option gesendet.</p>
 
     <h3>Eingaben</h3>
+    <p>Zuerst werden <code>msg.options</code> und <code>msg.ui_update</code> angewendet.
+        Danach wird eine Option gewählt: über <code>msg.index</code>, sonst über <code>msg.step</code>, sonst über <code>msg.payload</code>.</p>
     <dl class="message-properties">
-        <dt class="optional">payload <span class="property-type">string | number | boolean</span></dt>
-        <dd>Wählt die Option mit diesem Wert. Eine Zahl findet auch eine Option mit dem gleichen Text als Wert,
-            <code>1</code> wählt also die Option <code>"1"</code>. Passt keine Option, zeigt der Node eine Warnung und nichts ändert sich.</dd>
+        <dt class="optional">payload <span class="property-type">beliebig</span></dt>
+        <dd>Wählt die Option mit diesem Wert. Text und Zahlen passen zueinander, <code>1</code> wählt also die Option <code>"1"</code>
+            und <code>"true"</code> die Option <code>true</code>. Objekte passen zu Optionen mit gleichem JSON.
+            Passt keine Option, zeigt der Node eine Warnung und nichts ändert sich.</dd>
+        <dt class="optional">index <span class="property-type">number</span></dt>
+        <dd>Wählt die Option an dieser Position, beginnend bei 0.</dd>
+        <dt class="optional">step <span class="property-type">number</span></dt>
+        <dd>Geht um so viele Optionen weiter: <code>1</code> ist weiter, <code>-1</code> zurück. Beachtet die Einstellung für die Enden.</dd>
         <dt class="optional">options <span class="property-type">array</span></dt>
-        <dd>Ersetzt die Optionen, zum Beispiel <code>[{"label":"Aus","value":"off"},{"label":"An","value":"on"}]</code>.
-            Jede Option braucht einen <code>value</code>; ohne <code>label</code> wird der Wert angezeigt.
+        <dd>Ersetzt die Optionen. Entweder einfache Werte, z. B. <code>["Aus","An"]</code> oder <code>[18,20,22]</code>,
+            oder Objekte, z. B. <code>[{"label":"Aus","value":"off"},{"label":"An","value":"on"}]</code>.
+            Ohne <code>label</code> wird der Wert angezeigt, ohne <code>value</code> wird die Beschriftung gesendet.
             Die aktuelle Option bleibt gewählt, wenn sie noch in der Liste ist, sonst die erste.</dd>
+        <dt class="optional">ui_update <span class="property-type">object</span></dt>
+        <dd>Ändert das Aussehen: <code>label</code>, <code>prevIcon</code>, <code>nextIcon</code>, <code>iconColor</code>,
+            <code>iconSize</code>, <code>buttonColor</code>, z. B. <code>{"label":"Modus","buttonColor":"red"}</code>.
+            <code>null</code> stellt die Einstellung aus dem Editor wieder her. <code>class</code> fügt CSS-Klassen hinzu.</dd>
         <dt class="optional">enabled <span class="property-type">boolean</span></dt>
         <dd><code>false</code> sperrt die Buttons, <code>true</code> gibt sie wieder frei.</dd>
         <dt class="optional">visible <span class="property-type">boolean</span></dt>
@@ -22,7 +34,7 @@
     <h3>Ausgaben</h3>
     <dl class="message-properties">
         <dt>payload <span class="property-type">beliebig</span></dt>
-        <dd>Der Wert der gewählten Option.</dd>
+        <dd>Der Wert der gewählten Option, mit dem Typ aus dem Editor (Text, Zahl, Boolean oder JSON).</dd>
         <dt>label <span class="property-type">string</span></dt>
         <dd>Die Beschriftung der gewählten Option.</dd>
         <dt>index <span class="property-type">number</span></dt>
@@ -32,9 +44,10 @@
     </dl>
 
     <h3>Details</h3>
-    <p>Eine Nachricht wird gesendet, wenn jemand im Dashboard umschaltet und wenn eine Eingabe-Nachricht eine Option wählt.
+    <p>Eine Nachricht wird gesendet, wenn jemand im Dashboard umschaltet. Wählt eine Eingabe-Nachricht eine Option,
+        wird nur dann eine Nachricht gesendet, wenn <i>Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt</i> angehakt ist.
         Alle offenen Dashboards zeigen dieselbe Option.</p>
-    <p>Nach einem Deploy startet das Widget wieder mit den Optionen aus dem Editor.
+    <p>Nach einem Deploy startet das Widget wieder mit den Optionen und dem Aussehen aus dem Editor.
         Die gewählte Option bleibt erhalten, wenn sie dort noch vorkommt.</p>
 
     <h3>Einstellungen</h3>
@@ -44,7 +57,12 @@
         <dt>Beschriftung</dt>
         <dd>Optionaler Text über dem Widget. HTML ist erlaubt.</dd>
         <dt>Optionen</dt>
-        <dd>Die Liste zum Durchschalten. Jede Option hat eine Beschriftung (angezeigt, HTML erlaubt) und einen Wert (gesendet).</dd>
+        <dd>Die Liste zum Durchschalten. Jede Option hat eine Beschriftung (angezeigt, HTML erlaubt) und einen Wert (gesendet).
+            Der Wert kann Text, eine Zahl, ein Boolean oder JSON sein.</dd>
+        <dt>Nach der letzten Option wieder bei der ersten beginnen</dt>
+        <dd>Ohne Haken bleiben die Buttons bei der ersten und der letzten Option stehen.</dd>
+        <dt>Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt</dt>
+        <dd>Ohne Haken lassen, wenn das Widget nur einen Zustand anzeigt, damit keine Nachricht im Kreis läuft.</dd>
         <dt>Icon zurück, Icon weiter</dt>
         <dd>Name eines <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design Icons</a>
             ohne das Präfix <code>mdi-</code>, z. B. <code>chevron-left</code>.

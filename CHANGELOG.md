@@ -23,6 +23,13 @@
 
 ### Added
 
+- `msg.index` selects by position, `msg.step` moves forward or back (e.g. `1` or `-1`).
+- `msg.options` also accepts plain values like `["Off","On"]` or `[18,20,22]`, and objects with only a label.
+- `msg.ui_update` changes label, icons, icon size and colors at runtime; `null` returns to the editor setting.
+- Option values in the editor can be text, number, boolean or JSON. Invalid values are marked in the editor.
+- Setting *Send a message when an input message selects an option* (off for new nodes, on for nodes from 1.0).
+- Setting *After the last option, start again at the first* (on by default). If off, the buttons stop at both ends.
+- `msg.payload` finds options with the same JSON, and `"true"` finds the option `true`.
 - `msg.enabled`, `msg.visible` and `msg.class`.
 - `index` in every output message, `topic` is passed on from input messages.
 - German translation of the editor and the help, all editor texts translatable.
