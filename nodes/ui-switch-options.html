@@ -1,5 +1,34 @@
 <script type="text/javascript">
     (function () {
+        const DEFAULT_PREV = 'chevron-double-left'
+        const DEFAULT_NEXT = 'chevron-double-right'
+        // Dashboard 2 defaults, used when the group's page has no theme
+        const DEFAULT_THEME = { primary: '#0094ce', groupBg: '#ffffff' }
+        // Icon sizes in px. S is the size Dashboard uses without a setting, so it is stored as empty.
+        const SIZES = { s: { value: '', px: 18 }, m: { value: '24', px: 24 }, l: { value: '32', px: 32 } }
+        const PALETTE = ['#dc2626', '#ea580c', '#d97706', '#16a34a', '#0d9488', '#0284c7', '#2563eb', '#7c3aed', '#db2777', '#475569', '#0f172a', '#ffffff']
+        // Vuetify color names as the widget shows them on icons (v-icon turns names into Vuetify color classes)
+        const VUETIFY_COLORS = {
+            red: '#f44336', pink: '#e91e63', purple: '#9c27b0', 'deep-purple': '#673ab7', indigo: '#3f51b5', blue: '#2196f3', 'light-blue': '#03a9f4',
+            cyan: '#00bcd4', teal: '#009688', green: '#4caf50', 'light-green': '#8bc34a', lime: '#cddc39', yellow: '#ffeb3b', amber: '#ffc107',
+            orange: '#ff9800', 'deep-orange': '#ff5722', brown: '#795548', 'blue-grey': '#607d8b', grey: '#9e9e9e', black: '#000000', white: '#ffffff'
+        }
+        // Shown before searching: icons that suit previous / next buttons
+        const SUGGESTED_ICONS = [
+            'chevron-double-left', 'chevron-double-right', 'chevron-left', 'chevron-right', 'chevron-up', 'chevron-down',
+            'arrow-left', 'arrow-right', 'arrow-left-bold', 'arrow-right-bold', 'arrow-up', 'arrow-down',
+            'menu-left', 'menu-right', 'menu-up', 'menu-down', 'minus', 'plus', 'minus-circle-outline', 'plus-circle-outline',
+            'skip-previous', 'skip-next', 'rewind', 'fast-forward', 'step-backward', 'step-forward', 'undo', 'redo',
+            'page-previous-outline', 'page-next-outline', 'thermometer-minus', 'thermometer-plus', 'volume-minus', 'volume-plus',
+            'brightness-5', 'brightness-7', 'fan-minus', 'fan-plus', 'lightbulb-outline', 'lightbulb-on', 'power', 'home'
+        ]
+        const ICON_GRID_LIMIT = 300
+
+        let mdiIcons = null // null: not loaded, 'loading', 'failed' or { name: codePoint }
+        const mdiWaiting = []
+        // Stops the preview of the open editor, so late callbacks (icon list, events while closing) do nothing.
+        let stopPreview = null
+
         // Checks an option value stored as text against its type (str, num, bool, json)
         function validValue (option) {
             const value = option.value
@@ -10,6 +39,56 @@
                     try { JSON.parse(value); return true } catch (e) { return false }
                 default: return true
             }
+        }
+
+        function iconName (value) {
+            return typeof value === 'string' ? value.trim().replace(/^mdi-/, '') : ''
+        }
+
+        function loadMdiIcons (done) {
+            if (mdiIcons && mdiIcons !== 'loading') return done()
+            mdiWaiting.push(done)
+            if (mdiIcons === 'loading') return
+            mdiIcons = 'loading'
+            if (!document.getElementById('uso-mdi-font')) {
+                $('<style id="uso-mdi-font"></style>')
+                    .text('@font-face{font-family:"uso-mdi";font-display:block;src:url("ui-switch-options/mdi.woff2") format("woff2")}')
+                    .appendTo(document.head)
+            }
+            $.getJSON('ui-switch-options/mdi-icons').done(function (map) {
+                mdiIcons = map && typeof map === 'object' && Object.keys(map).length ? map : 'failed'
+            }).fail(function () {
+                mdiIcons = 'failed'
+            }).always(function () {
+                mdiWaiting.splice(0).forEach(function (fn) { fn() })
+            })
+        }
+
+        function glyph (name) {
+            const code = mdiIcons && typeof mdiIcons === 'object' ? mdiIcons[name] : undefined
+            return code ? String.fromCodePoint(parseInt(code, 16)) : ''
+        }
+
+        function hexColor (text) {
+            const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(typeof text === 'string' ? text.trim() : '')
+            if (!match) return null
+            return '#' + (match[1].length === 3 ? match[1].replace(/./g, '$&$&') : match[1]).toLowerCase()
+        }
+
+        // Same rule as the widget: dark icons on light hex colors, white ones on dark colors
+        function contrastColor (color) {
+            const hex = hexColor(color)
+            if (!hex) return undefined
+            const [r, g, b] = [1, 3, 5].map(function (i) {
+                const c = parseInt(hex.slice(i, i + 2), 16) / 255
+                return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+            })
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.179 ? '#0f172a' : '#ffffff'
+        }
+
+        function sanitize (html) {
+            const text = String(html === undefined || html === null ? '' : html)
+            return window.DOMPurify ? window.DOMPurify.sanitize(text) : $('<div/>').text(text).html()
         }
 
         RED.nodes.registerType('ui-switch-options', {
@@ -54,6 +133,11 @@
 
             oneditprepare: function () {
                 const node = this
+                const t = function (key, args) { return node._('ui-switch-options.' + key, args) }
+                const $editor = $('#uso-editor')
+                let previewIndex = 0
+                let ready = false
+                stopPreview = function () { ready = false }
 
                 $('#node-input-size').elementSizer({
                     width: '#node-input-width',
@@ -65,21 +149,37 @@
                 if (node.passthru === undefined) $('#node-input-passthru').prop('checked', true)
                 if (node.wrap === undefined) $('#node-input-wrap').prop('checked', true)
 
+                // ---- tabs -------------------------------------------------------------------------------
+                const tabs = RED.tabs.create({
+                    id: 'uso-tabs',
+                    onchange: function (tab) {
+                        $('#uso-tabs-content').children().hide()
+                        $('#' + tab.id).show()
+                        $editor.find('.uso-icon-panel').prop('hidden', true)
+                    }
+                })
+                tabs.addTab({ id: 'uso-tab-options', label: t('tab.options') })
+                tabs.addTab({ id: 'uso-tab-look', label: t('tab.look') })
+
+                // ---- options list -----------------------------------------------------------------------
                 $('#node-input-options-list').editableList({
                     addItem: function (container, index, option) {
                         option = option || { label: '', value: '', valueType: 'str' }
                         const row = $('<div/>', { style: 'display: flex; gap: 10px;' }).appendTo(container)
-                        $('<input/>', { type: 'text', class: 'node-input-option-label', style: 'flex: 1;', placeholder: node._('ui-switch-options.label.optionLabel') })
+                        $('<input/>', { type: 'text', class: 'node-input-option-label', style: 'flex: 1;', placeholder: t('label.optionLabel') })
                             .appendTo(row).val(option.label)
                         const value = $('<input/>', { type: 'text', class: 'node-input-option-value', style: 'width: 100%;' })
                         $('<div/>', { style: 'flex: 1;' }).append(value).appendTo(row)
                         value.typedInput({ default: 'str', types: ['str', 'num', 'bool', 'json'] })
                         value.typedInput('type', option.valueType || 'str')
                         value.typedInput('value', typeof option.value === 'string' ? option.value : String(option.value))
+                        updatePreview()
                     },
+                    removeItem: function () { updatePreview() },
+                    sortItems: function () { updatePreview() },
                     header: $('<div/>', { style: 'display: flex; gap: 10px; padding-left: 28px; padding-right: 32px;' }).append(
-                        $('<div/>', { style: 'flex: 1;' }).text(node._('ui-switch-options.label.optionLabel')),
-                        $('<div/>', { style: 'flex: 1;' }).text(node._('ui-switch-options.label.optionValue'))
+                        $('<div/>', { style: 'flex: 1;' }).text(t('label.optionLabel')),
+                        $('<div/>', { style: 'flex: 1;' }).text(t('label.optionValue'))
                     ),
                     sortable: true,
                     removable: true,
@@ -90,10 +190,243 @@
                 for (const option of node.options || []) {
                     $('#node-input-options-list').editableList('addItem', option)
                 }
+
+                // ---- colors -----------------------------------------------------------------------------
+                // A row of swatches (standard, transparent for buttons, palette, own color) next to a text field that holds the value.
+                function colorField ($input, withTransparent) {
+                    const $swatches = $('<div class="uso-swatches" role="radiogroup"></div>')
+                    $('<button type="button" class="uso-swatch uso-swatch-default" role="radio" data-color=""><span class="uso-dot"></span><span></span></button>')
+                        .attr('title', t('color.defaultHint')).appendTo($swatches).find('span').last().text(t('color.default'))
+                    if (withTransparent) {
+                        $('<button type="button" class="uso-swatch uso-swatch-transparent" role="radio" data-color="transparent"></button>')
+                            .attr({ title: t('color.transparent'), 'aria-label': t('color.transparent') }).appendTo($swatches)
+                    }
+                    PALETTE.forEach(function (color) {
+                        $('<button type="button" class="uso-swatch" role="radio"></button>')
+                            .attr({ 'data-color': color, title: color, 'aria-label': color }).css('background-color', color).appendTo($swatches)
+                    })
+                    $('<label class="uso-swatch uso-swatch-custom"><i class="fa fa-eyedropper" aria-hidden="true"></i><input type="color"></label>')
+                        .attr('title', t('color.custom')).appendTo($swatches).find('input').attr('aria-label', t('color.custom'))
+                    $input.addClass('uso-color-text').before($swatches)
+                    $swatches.on('click', '.uso-swatch[data-color]', function () {
+                        $input.val($(this).attr('data-color')).trigger('change')
+                    })
+                    $swatches.on('input', 'input[type=color]', function () {
+                        $input.val(this.value).trigger('change')
+                    })
+                    $input.on('input change', function () { syncColor($input) })
+                    syncColor($input)
+                }
+                function syncColor ($input) {
+                    const value = String($input.val() || '').trim().toLowerCase()
+                    const $swatches = $input.siblings('.uso-swatches')
+                    const known = value === '' || value === 'transparent' || PALETTE.includes(value)
+                    $swatches.find('.uso-swatch').each(function () {
+                        const color = $(this).attr('data-color')
+                        const on = color === undefined ? !known : color === value
+                        $(this).toggleClass('active', on).attr('aria-checked', String(on))
+                    })
+                    const own = !known && (hexColor(value) || VUETIFY_COLORS[value])
+                    $swatches.find('.uso-swatch-custom').toggleClass('uso-has-color', !!own).css({ 'background-color': own || '', color: own ? contrastColor(own) : '' })
+                    $swatches.find('input[type=color]').val(hexColor(value) || '#808080')
+                }
+                colorField($('#node-input-iconColor'), false)
+                colorField($('#node-input-buttonColor'), true)
+
+                // ---- icon size --------------------------------------------------------------------------
+                function syncSize () {
+                    const value = String($('#node-input-iconSize').val() || '').trim().replace(/px$/, '')
+                    $('#uso-size-presets .uso-size').each(function () {
+                        const size = SIZES[$(this).attr('data-size')]
+                        $(this).toggleClass('selected', value === size.value || (value !== '' && Number(value) === size.px))
+                    })
+                }
+                $('#uso-size-presets').on('click', '.uso-size', function () {
+                    $('#node-input-iconSize').val(SIZES[$(this).attr('data-size')].value).trigger('change')
+                })
+                $('#node-input-iconSize').on('input change', syncSize)
+                syncSize()
+
+                // ---- icon pickers -----------------------------------------------------------------------
+                // A button showing the current icon; it opens a panel with suggestions and a search over all Material Design Icons.
+                function iconPicker ($input, fallback) {
+                    const $button = $('<button type="button" class="red-ui-button uso-icon-button" aria-haspopup="listbox"><span class="uso-glyph"></span><span class="uso-icon-name"></span><i class="fa fa-caret-down"></i></button>')
+                    $input.after($button)
+                    const $panel = $('<div class="uso-icon-panel" hidden><input type="text" class="uso-icon-search"><div class="uso-icon-grid" role="listbox"></div><div class="uso-icon-count"></div></div>')
+                    $input.closest('.form-row').after($panel)
+                    const $search = $panel.find('.uso-icon-search').attr({ placeholder: t('icon.search'), 'aria-label': t('icon.search') })
+                    const $grid = $panel.find('.uso-icon-grid')
+
+                    function refresh () {
+                        const name = iconName($input.val())
+                        $button.find('.uso-glyph').text(glyph(name || fallback))
+                        $button.find('.uso-icon-name').text(name || t('icon.default', { name: fallback }))
+                    }
+                    function option (name, title) {
+                        return $('<button type="button" class="uso-icon-option" role="option"></button>')
+                            .attr({ 'data-icon': name, title: title || name, 'aria-label': title || name })
+                            .toggleClass('active', name === iconName($input.val()))
+                            .append($('<span class="uso-glyph"></span>').text(glyph(name || fallback)))
+                    }
+                    function fill () {
+                        $grid.empty()
+                        $panel.find('.uso-icon-count').text('')
+                        if (mdiIcons === 'loading') return $('<div class="uso-icon-empty"></div>').text(t('icon.loading')).appendTo($grid)
+                        const query = $search.val().trim().toLowerCase().replace(/\s+/g, '-').replace(/^mdi-/, '')
+                        let names
+                        if (!query) {
+                            option('', t('icon.default', { name: fallback })).addClass('uso-icon-default').appendTo($grid)
+                            names = SUGGESTED_ICONS.filter(function (name) { return mdiIcons[name] })
+                            $panel.find('.uso-icon-count').text(t('icon.searchHint', { total: Object.keys(mdiIcons).length }))
+                        } else {
+                            names = Object.keys(mdiIcons).filter(function (name) { return name.indexOf(query) !== -1 })
+                            // Exact and leading matches first
+                            names.sort(function (a, b) { return (a.indexOf(query) === 0 ? 0 : 1) - (b.indexOf(query) === 0 ? 0 : 1) || a.length - b.length || (a < b ? -1 : 1) })
+                            if (!names.length) $('<div class="uso-icon-empty"></div>').text(t('icon.noMatch')).appendTo($grid)
+                            if (names.length > ICON_GRID_LIMIT) $panel.find('.uso-icon-count').text(t('icon.more', { shown: ICON_GRID_LIMIT, total: names.length }))
+                        }
+                        names.slice(0, ICON_GRID_LIMIT).forEach(function (name) { option(name).appendTo($grid) })
+                    }
+                    function close () {
+                        $panel.prop('hidden', true)
+                        $button.attr('aria-expanded', 'false')
+                    }
+                    $button.on('click', function () {
+                        const opening = $panel.prop('hidden')
+                        $editor.find('.uso-icon-panel').prop('hidden', true)
+                        $editor.find('.uso-icon-button').attr('aria-expanded', 'false')
+                        if (!opening) return
+                        $panel.prop('hidden', false)
+                        $button.attr('aria-expanded', 'true')
+                        $search.val('')
+                        fill()
+                        $search.trigger('focus')
+                    })
+                    $search.on('input', fill).on('keydown', function (event) {
+                        if (event.key === 'Enter') {
+                            event.preventDefault()
+                            $grid.find('.uso-icon-option').first().trigger('click')
+                        }
+                    })
+                    $panel.on('keydown', function (event) {
+                        if (event.key === 'Escape') {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            close()
+                            $button.trigger('focus')
+                        }
+                    })
+                    $panel.on('click', '.uso-icon-option', function () {
+                        $input.val($(this).attr('data-icon')).trigger('change')
+                        close()
+                        $button.trigger('focus')
+                    })
+                    $input.on('change', refresh)
+                    // Without the icon list (e.g. Dashboard not found) the name is typed in as before.
+                    loadMdiIcons(function () {
+                        if (mdiIcons === 'failed') {
+                            $button.remove()
+                            $panel.remove()
+                            $input.attr({ type: 'text', placeholder: fallback })
+                        } else {
+                            refresh()
+                            if (!$panel.prop('hidden')) fill()
+                        }
+                    })
+                    $input.val(iconName($input.val()))
+                    refresh()
+                }
+                iconPicker($('#node-input-prevIcon'), DEFAULT_PREV)
+                iconPicker($('#node-input-nextIcon'), DEFAULT_NEXT)
+
+                // ---- preview ----------------------------------------------------------------------------
+                function theme () {
+                    const result = Object.assign({}, DEFAULT_THEME)
+                    const group = RED.nodes.node($('#node-input-group').val())
+                    const page = group && RED.nodes.node(group.page)
+                    const themeNode = page && page.theme && RED.nodes.node(page.theme)
+                    const colors = (themeNode && themeNode.colors) || {}
+                    if (hexColor(colors.primary)) result.primary = colors.primary
+                    if (hexColor(colors.groupBg)) result.groupBg = colors.groupBg
+                    return result
+                }
+                function previewOptions () {
+                    const options = []
+                    $('#node-input-options-list').editableList('items').each(function () {
+                        const label = $(this).find('.node-input-option-label').val()
+                        const value = $(this).find('.node-input-option-value').typedInput('value')
+                        if (value !== '') options.push(label || value)
+                    })
+                    return options
+                }
+                // Colors as the widget resolves them: icon colors through Vuetify, button colors as CSS.
+                function iconColorCss (value, colors) {
+                    const name = String(value || '').trim().toLowerCase()
+                    if (name === 'primary') return colors.primary
+                    return VUETIFY_COLORS[name] || value
+                }
+                function updatePreview () {
+                    const $preview = $('#uso-preview')
+                    if (!ready) return
+                    const colors = theme()
+                    const options = previewOptions()
+                    const wrap = $('#node-input-wrap').prop('checked')
+                    if (previewIndex >= options.length) previewIndex = 0
+                    const canSwitch = options.length > 1
+                    const canPrev = canSwitch && (wrap || previewIndex > 0)
+                    const canNext = canSwitch && (wrap || previewIndex < options.length - 1)
+
+                    const button = String($('#node-input-buttonColor').val() || '').trim()
+                    const icon = String($('#node-input-iconColor').val() || '').trim()
+                    const size = String($('#node-input-iconSize').val() || '').trim()
+                    const background = button === '' ? colors.primary : button
+                    const iconCss = icon ? iconColorCss(icon, colors) : button === 'transparent' ? colors.primary : (contrastColor(button) || '#ffffff')
+                    const iconPx = size === '' ? SIZES.s.px + 'px' : /^\d+(\.\d+)?$/.test(size) ? size + 'px' : size
+
+                    // The "standard" swatches show what standard currently means
+                    $('#node-input-buttonColor').siblings('.uso-swatches').find('.uso-dot').css('background', colors.primary)
+                    $('#node-input-iconColor').siblings('.uso-swatches').find('.uso-dot').css('background', button === 'transparent' ? colors.primary : (contrastColor(button) || '#ffffff'))
+
+                    $preview.css({ 'background-color': colors.groupBg, color: contrastColor(colors.groupBg) === '#ffffff' ? '#ffffff' : '#000000' })
+                    const label = $('#node-input-label').val()
+                    $preview.find('.uso-w-label').html(sanitize(label)).toggle(label !== '')
+                    $preview.find('.uso-w-current').html(options.length ? sanitize(options[previewIndex]) : t('preview.noOptions'))
+                    $preview.find('.uso-w-btn').each(function () {
+                        const prev = $(this).attr('data-step') === '-1'
+                        const enabled = prev ? canPrev : canNext
+                        const name = iconName($(prev ? '#node-input-prevIcon' : '#node-input-nextIcon').val()) || (prev ? DEFAULT_PREV : DEFAULT_NEXT)
+                        $(this).prop('disabled', !enabled).toggleClass('uso-w-flat', button === 'transparent')
+                            .css('background-color', enabled ? background : '')
+                        $(this).find('.uso-glyph').text(glyph(name)).css({ color: enabled ? iconCss : '', 'font-size': iconPx })
+                    })
+                }
+                $('#uso-preview').on('click', '.uso-w-btn', function () {
+                    const count = previewOptions().length
+                    if (!count) return
+                    const next = previewIndex + Number($(this).attr('data-step'))
+                    previewIndex = $('#node-input-wrap').prop('checked') ? (next + count) % count : Math.min(Math.max(next, 0), count - 1)
+                    updatePreview()
+                })
+                $('#uso-preview-toggle').on('click', function () {
+                    const open = $('#uso-preview-body').prop('hidden')
+                    $('#uso-preview-body').prop('hidden', !open)
+                    $(this).attr('aria-expanded', String(open)).find('i').toggleClass('fa-angle-down', open).toggleClass('fa-angle-right', !open)
+                })
+                $editor.on('input change', 'input, select', updatePreview)
+                ready = true
+                loadMdiIcons(updatePreview)
+                updatePreview()
+            },
+
+            oneditcancel: function () {
+                if (stopPreview) stopPreview()
+                stopPreview = null
             },
 
             oneditsave: function () {
                 const node = this
+                if (stopPreview) stopPreview()
+                stopPreview = null
                 node.options = []
                 $('#node-input-options-list').editableList('items').each(function () {
                     const label = $(this).find('.node-input-option-label').val()
@@ -110,58 +443,161 @@
 </script>
 
 <script type="text/html" data-template-name="ui-switch-options">
-    <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="ui-switch-options.label.name"></span></label>
-        <input type="text" id="node-input-name" data-i18n="[placeholder]ui-switch-options.label.name">
-    </div>
-    <div class="form-row">
-        <label for="node-input-group"><i class="fa fa-table"></i> <span data-i18n="ui-switch-options.label.group"></span></label>
-        <input type="text" id="node-input-group">
-    </div>
-    <div class="form-row">
-        <label><i class="fa fa-object-group"></i> <span data-i18n="ui-switch-options.label.size"></span></label>
-        <input type="hidden" id="node-input-width">
-        <input type="hidden" id="node-input-height">
-        <button class="editor-button" id="node-input-size"></button>
-    </div>
-    <div class="form-row">
-        <label for="node-input-label"><i class="fa fa-i-cursor"></i> <span data-i18n="ui-switch-options.label.label"></span></label>
-        <input type="text" id="node-input-label" data-i18n="[placeholder]ui-switch-options.placeholder.label">
-    </div>
-    <div class="form-row node-input-options-container-row">
-        <label><i class="fa fa-list"></i> <span data-i18n="ui-switch-options.label.options"></span></label>
-        <ol id="node-input-options-list"></ol>
-    </div>
-    <div class="form-row">
-        <label for="node-input-wrap" style="width: auto;">
-            <input type="checkbox" id="node-input-wrap" style="width: auto; margin: 0 6px 0 0;">
-            <span data-i18n="ui-switch-options.label.wrap"></span>
-        </label>
-    </div>
-    <div class="form-row">
-        <label for="node-input-passthru" style="width: auto;">
-            <input type="checkbox" id="node-input-passthru" style="width: auto; margin: 0 6px 0 0;">
-            <span data-i18n="ui-switch-options.label.passthru"></span>
-        </label>
-    </div>
-    <div class="form-row">
-        <label for="node-input-prevIcon"><i class="fa fa-arrow-left"></i> <span data-i18n="ui-switch-options.label.prevIcon"></span></label>
-        <input type="text" id="node-input-prevIcon" placeholder="chevron-double-left">
-    </div>
-    <div class="form-row">
-        <label for="node-input-nextIcon"><i class="fa fa-arrow-right"></i> <span data-i18n="ui-switch-options.label.nextIcon"></span></label>
-        <input type="text" id="node-input-nextIcon" placeholder="chevron-double-right">
-    </div>
-    <div class="form-row">
-        <label for="node-input-iconColor"><i class="fa fa-paint-brush"></i> <span data-i18n="ui-switch-options.label.iconColor"></span></label>
-        <input type="text" id="node-input-iconColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
-    </div>
-    <div class="form-row">
-        <label for="node-input-iconSize"><i class="fa fa-arrows-alt"></i> <span data-i18n="ui-switch-options.label.iconSize"></span></label>
-        <input type="text" id="node-input-iconSize" data-i18n="[placeholder]ui-switch-options.placeholder.iconSize">
-    </div>
-    <div class="form-row">
-        <label for="node-input-buttonColor"><i class="fa fa-hand-pointer-o"></i> <span data-i18n="ui-switch-options.label.buttonColor"></span></label>
-        <input type="text" id="node-input-buttonColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
+    <div id="uso-editor">
+        <div class="uso-preview-box">
+            <button type="button" id="uso-preview-toggle" class="uso-preview-toggle" aria-expanded="true" aria-controls="uso-preview-body">
+                <i class="fa fa-angle-down"></i> <span data-i18n="ui-switch-options.preview.title"></span>
+            </button>
+            <div id="uso-preview-body">
+                <div id="uso-preview" class="uso-preview">
+                    <div class="uso-w-label"></div>
+                    <div class="uso-w-row">
+                        <button type="button" class="uso-w-btn" data-step="-1" tabindex="-1"><span class="uso-glyph"></span></button>
+                        <span class="uso-w-current"></span>
+                        <button type="button" class="uso-w-btn" data-step="1" tabindex="-1"><span class="uso-glyph"></span></button>
+                    </div>
+                </div>
+                <div class="uso-hint" data-i18n="ui-switch-options.preview.hint"></div>
+            </div>
+        </div>
+
+        <div class="form-row uso-tabs-row">
+            <ul id="uso-tabs"></ul>
+        </div>
+        <div id="uso-tabs-content">
+            <div id="uso-tab-options">
+                <div class="form-row">
+                    <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="ui-switch-options.label.name"></span></label>
+                    <input type="text" id="node-input-name" data-i18n="[placeholder]ui-switch-options.label.name">
+                </div>
+                <div class="form-row">
+                    <label for="node-input-group"><i class="fa fa-table"></i> <span data-i18n="ui-switch-options.label.group"></span></label>
+                    <input type="text" id="node-input-group">
+                </div>
+                <div class="form-row">
+                    <label><i class="fa fa-object-group"></i> <span data-i18n="ui-switch-options.label.size"></span></label>
+                    <input type="hidden" id="node-input-width">
+                    <input type="hidden" id="node-input-height">
+                    <button class="editor-button" id="node-input-size"></button>
+                </div>
+                <div class="form-row">
+                    <label for="node-input-label"><i class="fa fa-i-cursor"></i> <span data-i18n="ui-switch-options.label.label"></span></label>
+                    <input type="text" id="node-input-label" data-i18n="[placeholder]ui-switch-options.placeholder.label">
+                </div>
+                <div class="form-row node-input-options-container-row">
+                    <label><i class="fa fa-list"></i> <span data-i18n="ui-switch-options.label.options"></span></label>
+                    <ol id="node-input-options-list"></ol>
+                </div>
+                <div class="form-row">
+                    <label for="node-input-wrap" style="width: auto;">
+                        <input type="checkbox" id="node-input-wrap" style="width: auto; margin: 0 6px 0 0;">
+                        <span data-i18n="ui-switch-options.label.wrap"></span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <label for="node-input-passthru" style="width: auto;">
+                        <input type="checkbox" id="node-input-passthru" style="width: auto; margin: 0 6px 0 0;">
+                        <span data-i18n="ui-switch-options.label.passthru"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="uso-tab-look" style="display: none;">
+                <div class="form-row">
+                    <label><i class="fa fa-arrow-left"></i> <span data-i18n="ui-switch-options.label.prevIcon"></span></label>
+                    <input type="hidden" id="node-input-prevIcon">
+                </div>
+                <div class="form-row">
+                    <label><i class="fa fa-arrow-right"></i> <span data-i18n="ui-switch-options.label.nextIcon"></span></label>
+                    <input type="hidden" id="node-input-nextIcon">
+                </div>
+                <div class="form-row uso-flex-row">
+                    <label for="node-input-iconSize"><i class="fa fa-arrows-alt"></i> <span data-i18n="ui-switch-options.label.iconSize"></span></label>
+                    <span id="uso-size-presets" class="button-group">
+                        <button type="button" class="red-ui-button toggle uso-size" data-size="s" data-i18n="[title]ui-switch-options.size.s">S</button><button type="button" class="red-ui-button toggle uso-size" data-size="m" data-i18n="[title]ui-switch-options.size.m">M</button><button type="button" class="red-ui-button toggle uso-size" data-size="l" data-i18n="[title]ui-switch-options.size.l">L</button>
+                    </span>
+                    <span class="uso-size-custom">
+                        <input type="text" id="node-input-iconSize" placeholder="18" data-i18n="[title]ui-switch-options.size.custom">
+                        <span>px</span>
+                    </span>
+                </div>
+                <div class="form-row uso-flex-row">
+                    <label for="node-input-iconColor"><i class="fa fa-paint-brush"></i> <span data-i18n="ui-switch-options.label.iconColor"></span></label>
+                    <div class="uso-color">
+                        <input type="text" id="node-input-iconColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
+                    </div>
+                </div>
+                <div class="form-row uso-flex-row">
+                    <label for="node-input-buttonColor"><i class="fa fa-square"></i> <span data-i18n="ui-switch-options.label.buttonColor"></span></label>
+                    <div class="uso-color">
+                        <input type="text" id="node-input-buttonColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </script>
+
+<style>
+    #uso-editor .uso-hint { color: var(--red-ui-secondary-text-color, #777); font-size: 0.9em; margin-top: 4px; }
+
+    /* Preview: stays at the top while the form scrolls */
+    #uso-editor .uso-preview-box { position: sticky; top: 0; z-index: 5; margin: 0 0 12px; padding-bottom: 8px; background: var(--red-ui-primary-background, #fff); border-bottom: 1px solid var(--red-ui-secondary-border-color, #ddd); }
+    #uso-editor .uso-preview-toggle { border: 0; background: none; padding: 0 0 6px; color: inherit; font-weight: bold; cursor: pointer; }
+    #uso-editor .uso-preview-toggle i { width: 10px; }
+    #uso-editor #uso-preview-body[hidden] { display: none; }
+    #uso-editor .uso-preview { display: flex; flex-direction: column; align-items: center; padding: 20px; border: 1px solid var(--red-ui-secondary-border-color, #ccc); border-radius: 4px; font-family: Helvetica, Arial, sans-serif; }
+    #uso-editor .uso-w-label { font-size: 21px; font-weight: 700; line-height: 1.425; margin-bottom: 20px; text-align: center; }
+    #uso-editor .uso-w-row { display: flex; align-items: center; justify-content: center; }
+    #uso-editor .uso-w-current { font-size: 21px; line-height: 1.425; margin: 0 20px; text-align: center; }
+    #uso-editor .uso-w-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; height: 48px; padding: 0 16px; border: 0; border-radius: 4px; cursor: pointer; overflow: hidden;
+        box-shadow: 0 3px 1px -2px rgba(0, 0, 0, .2), 0 2px 2px 0 rgba(0, 0, 0, .14), 0 1px 5px 0 rgba(0, 0, 0, .12); }
+    #uso-editor .uso-w-btn.uso-w-flat { box-shadow: none; }
+    #uso-editor .uso-w-btn:disabled { cursor: default; box-shadow: none; background-color: rgba(0, 0, 0, .12); }
+    #uso-editor .uso-w-btn:disabled .uso-glyph { color: rgba(0, 0, 0, .26); }
+    #uso-editor .uso-w-btn.uso-w-flat:disabled { background-color: transparent; }
+
+    #uso-editor .uso-glyph { display: inline-block; font-family: "uso-mdi"; font-style: normal; font-weight: normal; line-height: 1; -webkit-font-smoothing: antialiased; }
+
+    #uso-editor .uso-tabs-row { margin-bottom: 12px; }
+    #uso-editor .uso-flex-row { display: flex; align-items: flex-start; gap: 8px; }
+    #uso-editor .uso-flex-row > label { flex: 0 0 auto; margin-top: 6px; }
+
+    /* Icon size */
+    #uso-editor #uso-size-presets .red-ui-button { min-width: 38px; }
+    #uso-editor .uso-size-custom { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; }
+    #uso-editor .uso-size-custom input { width: 70px; }
+
+    /* Icon picker */
+    #uso-editor .uso-icon-button { display: inline-flex; align-items: center; gap: 8px; min-width: 200px; max-width: 70%; }
+    #uso-editor .uso-icon-button .uso-glyph { font-size: 18px; min-width: 18px; }
+    #uso-editor .uso-icon-button .uso-icon-name { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #uso-editor .uso-icon-panel { margin: -4px 0 12px 104px; padding: 8px; border: 1px solid var(--red-ui-secondary-border-color, #ccc); border-radius: 4px; background: var(--red-ui-secondary-background, #fafafa); }
+    #uso-editor .uso-icon-panel[hidden] { display: none; }
+    #uso-editor .uso-icon-search { width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+    #uso-editor .uso-icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 4px; max-height: 200px; overflow-y: auto; }
+    #uso-editor .uso-icon-option { height: 36px; padding: 0; border: 1px solid transparent; border-radius: 4px; background: transparent; color: inherit; cursor: pointer; font-size: 20px; }
+    #uso-editor .uso-icon-option:hover, #uso-editor .uso-icon-option:focus-visible { border-color: var(--red-ui-secondary-border-color, #bbb); }
+    #uso-editor .uso-icon-option.active { border-color: var(--red-ui-form-input-border-selected-color, #0094ce); background: var(--red-ui-tertiary-background, #e8f4fa); }
+    #uso-editor .uso-icon-default { border-style: dashed; border-color: var(--red-ui-secondary-border-color, #bbb); }
+    #uso-editor .uso-icon-empty { grid-column: 1 / -1; padding: 6px; color: var(--red-ui-secondary-text-color, #777); }
+    #uso-editor .uso-icon-count { margin-top: 6px; font-size: 0.9em; color: var(--red-ui-secondary-text-color, #777); }
+
+    /* Colors */
+    #uso-editor .uso-color { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; flex: 1; min-width: 0; }
+    #uso-editor .uso-swatches { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+    #uso-editor .uso-swatch { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin: 0; padding: 0; border: 1px solid rgba(128, 128, 128, .45); border-radius: 50%; box-sizing: border-box; background: transparent; color: inherit; cursor: pointer; }
+    #uso-editor .uso-swatch:hover { transform: scale(1.12); }
+    #uso-editor .uso-swatch:focus-visible, #uso-editor .uso-swatch-custom:focus-within { outline: 2px solid var(--red-ui-form-input-border-selected-color, #0094ce); outline-offset: 2px; }
+    #uso-editor .uso-swatch.active { box-shadow: 0 0 0 2px var(--red-ui-primary-background, #fff), 0 0 0 4px var(--red-ui-form-input-border-selected-color, #0094ce); }
+    #uso-editor .uso-swatch-default { width: auto; gap: 6px; padding: 0 9px 0 4px; border-radius: 11px; font-size: 0.9em; white-space: nowrap; }
+    #uso-editor .uso-swatch-default:hover { transform: none; border-color: var(--red-ui-form-input-border-selected-color, #0094ce); }
+    #uso-editor .uso-dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(128, 128, 128, .45); background: linear-gradient(135deg, #ffffff 50%, #0094ce 50%); }
+    #uso-editor .uso-swatch-transparent { background: repeating-conic-gradient(#c8c8c8 0 25%, #ffffff 0 50%) 50% / 8px 8px; }
+    #uso-editor .uso-swatch-custom { overflow: hidden; background: conic-gradient(#ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444); color: #fff; font-size: 11px; }
+    #uso-editor .uso-swatch-custom i { text-shadow: 0 0 2px #0009; }
+    #uso-editor .uso-swatch-custom.uso-has-color { background-image: none; }
+    #uso-editor .uso-swatch-custom.uso-has-color i { text-shadow: none; }
+    #uso-editor .uso-swatch-custom input[type=color] { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; opacity: 0; cursor: pointer; }
+    #uso-editor .uso-color .uso-color-text { flex: 0 0 150px; width: 150px; min-width: 0; font-family: monospace; }
+</style>

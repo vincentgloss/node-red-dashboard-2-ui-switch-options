@@ -33,6 +33,8 @@ Eine fertige Demo ist dabei: **Importieren → Beispiele → @vincentgloss/node-
 
 ## Einstellungen
 
+Oben im Editor zeigt eine **Vorschau** das Widget mit den aktuellen Einstellungen und den Farben aus dem Theme der Gruppe. Mit ihren Buttons blätterst du durch die Optionen. Die Einstellungen sind auf die Tabs *Optionen* und *Darstellung* verteilt.
+
 | Feld | Beschreibung |
 |---|---|
 | **Gruppe**, **Größe** | Wo das Widget erscheint und wie viel Platz es einnimmt. |
@@ -40,9 +42,9 @@ Eine fertige Demo ist dabei: **Importieren → Beispiele → @vincentgloss/node-
 | **Optionen** | Die Liste zum Durchschalten. Jede Option hat eine Beschriftung (angezeigt, HTML erlaubt) und einen Wert (gesendet). Der Wert kann Text, eine Zahl, ein Boolean oder JSON sein. Ohne Beschriftung wird der Wert angezeigt. |
 | **Nach der letzten Option wieder bei der ersten beginnen** | Standardmäßig an. Ohne Haken bleiben die Buttons bei der ersten und der letzten Option stehen. |
 | **Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt** | Bei neuen Nodes aus. Aus lassen, wenn das Widget nur einen Zustand anzeigt, damit keine Nachricht im Kreis läuft. |
-| **Icon zurück**, **Icon weiter** | Name eines [Material Design Icons](https://pictogrammers.com/library/mdi/) ohne das Präfix `mdi-`, z. B. `chevron-left`. Standard: `chevron-double-left` und `chevron-double-right`. |
-| **Icon-Farbe**, **Button-Farbe** | Leer nutzt das Theme. Sonst ein [Farbname](https://vuetifyjs.com/en/styles/colors/) wie `red`, ein Wert wie `#AEEA00` oder `transparent` für einen Button ohne Hintergrund und Schatten. |
-| **Icon-Größe** | Zum Beispiel `24` oder `24px`. Leer nutzt die Standardgröße. |
+| **Icon zurück**, **Icon weiter** | Auswahl mit passenden Vorschlägen und Suche über alle [Material Design Icons](https://pictogrammers.com/library/mdi/) des installierten Dashboards. Standard: `chevron-double-left` und `chevron-double-right`. |
+| **Icon-Größe** | **S** (18 px, Standard), **M** (24 px) oder **L** (32 px), oder eine eigene Größe in Pixeln. |
+| **Icon-Farbe**, **Button-Farbe** | Eine Farbe aus der Palette, eine eigene über die Pipette, oder im Textfeld ein Wert wie `#AEEA00` oder ein [Farbname](https://vuetifyjs.com/en/styles/colors/) wie `teal`. *Standard* nutzt das Theme. Die Button-Farbe kann auch *Transparent* sein (kein Hintergrund, kein Schatten). Ohne eigene Icon-Farbe ist das Icon auf transparenten Buttons in der Theme-Farbe und auf hellen Buttons dunkel. |
 
 ## Steuern aus dem Flow
 

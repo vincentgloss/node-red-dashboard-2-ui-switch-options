@@ -51,6 +51,8 @@
         The selected option is kept if it is still one of them.</p>
 
     <h3>Configuration</h3>
+    <p>At the top of the editor a <b>preview</b> shows the widget with the current settings and the colors of the group's theme.
+        Its buttons step through the options. The settings are split into the tabs <i>Options</i> and <i>Appearance</i>.</p>
     <dl class="message-properties">
         <dt>Group, Size</dt>
         <dd>Where the widget appears in the dashboard and how much room it takes.</dd>
@@ -64,14 +66,15 @@
         <dt>Send a message when an input message selects an option</dt>
         <dd>Leave unchecked if the widget only shows a state, so a message cannot loop back.</dd>
         <dt>Prev icon, Next icon</dt>
-        <dd>Name of a <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design icon</a>
-            without the <code>mdi-</code> prefix, e.g. <code>chevron-left</code>.
+        <dd>A click opens the icon picker with suitable suggestions. The search covers all
+            <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design icons</a> of the installed Dashboard.
             Default: <code>chevron-double-left</code> and <code>chevron-double-right</code>.</dd>
-        <dt>Icon color, Button color</dt>
-        <dd>Empty uses the theme. Otherwise a color name like <code>red</code> or <code>skyblue</code>,
-            a value like <code>#AEEA00</code>, or <code>transparent</code> for a button without background and shadow.
-            <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">Named colors</a></dd>
         <dt>Icon size</dt>
-        <dd>For example <code>24</code> or <code>24px</code>. Empty uses the default size.</dd>
+        <dd><b>S</b> (18 px, default), <b>M</b> (24 px) or <b>L</b> (32 px). The field next to them takes an own size in pixels.</dd>
+        <dt>Icon color, Button color</dt>
+        <dd>A color from the palette, your own with the eyedropper, or in the text field a value like <code>#AEEA00</code>
+            or a <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">color name</a> like <code>teal</code>.
+            <i>Default</i> uses the theme. The button color also offers <i>Transparent</i>: no background and no shadow.
+            Without an own icon color, the icon uses the theme color on transparent buttons and turns dark on light buttons.</dd>
     </dl>
 </script>

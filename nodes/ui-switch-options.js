@@ -1,4 +1,47 @@
+const fs = require('node:fs')
+const path = require('node:path')
+
+// Material Design Icons as the installed Dashboard ships them (names, code points and font), read once on demand.
+let mdi
+function loadMdi () {
+    if (mdi !== undefined) return mdi
+    mdi = null
+    try {
+        const assets = path.join(path.dirname(require.resolve('@flowfuse/node-red-dashboard/package.json')), 'dist', 'assets')
+        const files = fs.readdirSync(assets)
+        const font = files.find(file => /^materialdesignicons-webfont-.*\.woff2$/.test(file))
+        for (const file of files.filter(file => file.endsWith('.css'))) {
+            const css = fs.readFileSync(path.join(assets, file), 'utf8')
+            const names = {}
+            for (const match of css.matchAll(/\.mdi-([a-z0-9-]+):before\{content:"(\\[0-9a-fA-F]+|[^"\\]+)"\}/gu)) {
+                const code = match[2].startsWith('\\') ? match[2].slice(1).toLowerCase() : match[2].codePointAt(0).toString(16)
+                names[match[1]] = code
+            }
+            if (font && Object.keys(names).length) {
+                mdi = { icons: names, font: path.join(assets, font) }
+                break
+            }
+        }
+    } catch (error) {
+        mdi = null
+    }
+    return mdi
+}
+
 module.exports = function (RED) {
+    // Icon names and code points for the icon picker in the editor
+    RED.httpAdmin.get('/ui-switch-options/mdi-icons', RED.auth.needsPermission('ui-switch-options.read'), (req, res) => {
+        const set = loadMdi()
+        if (!set) return res.status(404).json({ error: 'Material Design Icons not found in @flowfuse/node-red-dashboard' })
+        res.json(set.icons)
+    })
+    // Loaded by an @font-face rule in the editor, which cannot send the admin token; the file is the public MDI font.
+    RED.httpAdmin.get('/ui-switch-options/mdi.woff2', (req, res) => {
+        const set = loadMdi()
+        if (!set) return res.sendStatus(404)
+        res.sendFile(set.font, { maxAge: '7d', headers: { 'Content-Type': 'font/woff2' } })
+    })
+
     // Settings that msg.ui_update can change at runtime
     const APPEARANCE = ['label', 'prevIcon', 'nextIcon', 'iconColor', 'iconSize', 'buttonColor']
 

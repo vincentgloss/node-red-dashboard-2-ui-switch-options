@@ -10,6 +10,7 @@
 
 ### Fixed
 
+- On a transparent button without an icon color, the icon was white and invisible on a light background. It now uses the theme color; on light button colors it turns dark.
 - Options set with `msg.options` were stored as an object instead of a list and were lost when a dashboard was reloaded. Selecting an option by `msg.payload` also dropped them.
 - A shorter `msg.options` list kept old entries from the previous list.
 - The node crashed on deploy if no group was set.
@@ -27,6 +28,7 @@
 - `msg.options` also accepts plain values like `["Off","On"]` or `[18,20,22]`, and objects with only a label.
 - `msg.ui_update` changes label, icons, icon size and colors at runtime; `null` returns to the editor setting.
 - Option values in the editor can be text, number, boolean or JSON. Invalid values are marked in the editor.
+- New editor: a live preview of the whole widget at the top (colors from the group's theme, its buttons step through the options), tabs *Options* and *Appearance*, an icon picker with suggestions and a search over all Material Design icons of the installed Dashboard, color swatches with an eyedropper, and icon sizes S, M, L or own pixels.
 - Setting *Send a message when an input message selects an option* (off for new nodes, on for nodes from 1.0).
 - Setting *After the last option, start again at the first* (on by default). If off, the buttons stop at both ends.
 - `msg.payload` finds options with the same JSON, and `"true"` finds the option `true`.

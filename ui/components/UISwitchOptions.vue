@@ -21,6 +21,18 @@ function mdiIcon (name, fallback) {
     return 'mdi-' + (icon || fallback)
 }
 
+// Dark icons on light hex colors, white ones on dark colors. Same rule as the editor preview.
+function contrastColor (color) {
+    const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(typeof color === 'string' ? color.trim() : '')
+    if (!match) return undefined
+    const hex = match[1].length === 3 ? match[1].replace(/./g, '$&$&') : match[1]
+    const [r, g, b] = [0, 2, 4].map(i => {
+        const c = parseInt(hex.slice(i, i + 2), 16) / 255
+        return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+    })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.179 ? '#0f172a' : '#ffffff'
+}
+
 export default {
     name: 'UISwitchOptions',
     inject: ['$socket', '$dataTracker'],
@@ -65,11 +77,19 @@ export default {
         nextIcon () {
             return mdiIcon(this.settings.nextIcon, 'chevron-double-right')
         },
+        // Without an own icon color: theme color on transparent buttons (white would be invisible there),
+        // otherwise a readable color on hex button colors, otherwise the button's own text color.
         iconColor () {
-            return this.settings.iconColor || undefined
+            if (this.settings.iconColor) return this.settings.iconColor
+            const button = this.settings.buttonColor
+            if (button === 'transparent') return 'primary'
+            return contrastColor(button)
         },
+        // Plain numbers are pixels; Vuetify adds the unit.
         iconSize () {
-            return this.settings.iconSize || undefined
+            const size = this.settings.iconSize
+            if (size === undefined || size === null || size === '') return undefined
+            return /^\d+(\.\d+)?$/.test(String(size).trim()) ? Number(size) : size
         },
         buttonStyle () {
             const color = this.settings.buttonColor

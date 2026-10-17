@@ -18,8 +18,36 @@
         },
         "placeholder": {
             "label": "Text über dem Widget (optional, HTML erlaubt)",
-            "color": "z. B. red, #AEEA00, transparent",
-            "iconSize": "z. B. 24 oder 24px"
+            "color": "Farbname oder #rrggbb"
+        },
+        "tab": {
+            "options": "Optionen",
+            "look": "Darstellung"
+        },
+        "preview": {
+            "title": "Vorschau",
+            "hint": "Mit den Buttons in der Vorschau blätterst du durch die Optionen. Farben aus dem Theme der Gruppe.",
+            "noOptions": "No option available"
+        },
+        "icon": {
+            "search": "Icon suchen, z. B. arrow, plus, lamp",
+            "default": "Standard (__name__)",
+            "loading": "Icons werden geladen …",
+            "searchHint": "Vorschläge. Die Suche durchsucht alle __total__ Material Design Icons.",
+            "noMatch": "Kein Icon gefunden",
+            "more": "__shown__ von __total__ Treffern. Genauer suchen, um mehr zu sehen."
+        },
+        "color": {
+            "default": "Standard",
+            "defaultHint": "Farbe aus dem Dashboard-Theme",
+            "transparent": "Transparent: kein Hintergrund, kein Schatten",
+            "custom": "Eigene Farbe wählen"
+        },
+        "size": {
+            "s": "Klein (18 px, Standard)",
+            "m": "Mittel (24 px)",
+            "l": "Groß (32 px)",
+            "custom": "Eigene Größe in Pixeln"
         },
         "errors": {
             "noGroup": "Keine Gruppe konfiguriert",

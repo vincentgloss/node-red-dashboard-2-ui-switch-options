@@ -51,6 +51,8 @@
         Die gewählte Option bleibt erhalten, wenn sie dort noch vorkommt.</p>
 
     <h3>Einstellungen</h3>
+    <p>Oben im Editor zeigt eine <b>Vorschau</b> das Widget mit den aktuellen Einstellungen und den Farben aus dem Theme der Gruppe.
+        Mit ihren Buttons blätterst du durch die Optionen. Die Einstellungen sind auf die Tabs <i>Optionen</i> und <i>Darstellung</i> verteilt.</p>
     <dl class="message-properties">
         <dt>Gruppe, Größe</dt>
         <dd>Wo das Widget im Dashboard erscheint und wie viel Platz es einnimmt.</dd>
@@ -64,14 +66,15 @@
         <dt>Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt</dt>
         <dd>Ohne Haken lassen, wenn das Widget nur einen Zustand anzeigt, damit keine Nachricht im Kreis läuft.</dd>
         <dt>Icon zurück, Icon weiter</dt>
-        <dd>Name eines <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design Icons</a>
-            ohne das Präfix <code>mdi-</code>, z. B. <code>chevron-left</code>.
+        <dd>Ein Klick öffnet die Icon-Auswahl mit passenden Vorschlägen. Die Suche findet alle
+            <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design Icons</a> des installierten Dashboards.
             Standard: <code>chevron-double-left</code> und <code>chevron-double-right</code>.</dd>
-        <dt>Icon-Farbe, Button-Farbe</dt>
-        <dd>Leer nutzt das Theme. Sonst ein Farbname wie <code>red</code> oder <code>skyblue</code>,
-            ein Wert wie <code>#AEEA00</code> oder <code>transparent</code> für einen Button ohne Hintergrund und Schatten.
-            <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">Farbnamen</a></dd>
         <dt>Icon-Größe</dt>
-        <dd>Zum Beispiel <code>24</code> oder <code>24px</code>. Leer nutzt die Standardgröße.</dd>
+        <dd><b>S</b> (18 px, Standard), <b>M</b> (24 px) oder <b>L</b> (32 px). Im Feld daneben steht eine eigene Größe in Pixeln.</dd>
+        <dt>Icon-Farbe, Button-Farbe</dt>
+        <dd>Eine Farbe aus der Palette, eine eigene über die Pipette, oder im Textfeld ein Wert wie <code>#AEEA00</code>
+            oder ein <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">Farbname</a> wie <code>teal</code>.
+            <i>Standard</i> nutzt das Theme. Bei der Button-Farbe gibt es zusätzlich <i>Transparent</i>: kein Hintergrund und kein Schatten.
+            Ohne eigene Icon-Farbe ist das Icon auf transparenten Buttons in der Theme-Farbe und auf hellen Buttons dunkel.</dd>
     </dl>
 </script>

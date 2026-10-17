@@ -33,6 +33,8 @@ A ready-made demo is included: **Import → Examples → @vincentgloss/node-red-
 
 ## Configuration
 
+At the top of the editor a **preview** shows the widget with the current settings and the colors of the group's theme. Its buttons step through the options. The settings are split into the tabs *Options* and *Appearance*.
+
 | Field | Description |
 |---|---|
 | **Group**, **Size** | Where the widget appears and how much room it takes. |
@@ -40,9 +42,9 @@ A ready-made demo is included: **Import → Examples → @vincentgloss/node-red-
 | **Options** | The list to step through. Each option has a label (shown, HTML allowed) and a value (sent). The value can be text, a number, a boolean or JSON. Without a label the value is shown. |
 | **After the last option, start again at the first** | On by default. If unchecked, the buttons stop at the first and the last option. |
 | **Send a message when an input message selects an option** | Off for new nodes. Leave it off if the widget only shows a state, so a message cannot loop back. |
-| **Prev icon**, **Next icon** | Name of a [Material Design icon](https://pictogrammers.com/library/mdi/) without the `mdi-` prefix, for example `chevron-left`. Default: `chevron-double-left` and `chevron-double-right`. |
-| **Icon color**, **Button color** | Empty uses the theme. Otherwise a [color name](https://vuetifyjs.com/en/styles/colors/) like `red`, a value like `#AEEA00`, or `transparent` for a button without background and shadow. |
-| **Icon size** | For example `24` or `24px`. Empty uses the default size. |
+| **Prev icon**, **Next icon** | Picker with suitable suggestions and a search over all [Material Design icons](https://pictogrammers.com/library/mdi/) of the installed Dashboard. Default: `chevron-double-left` and `chevron-double-right`. |
+| **Icon size** | **S** (18 px, default), **M** (24 px) or **L** (32 px), or an own size in pixels. |
+| **Icon color**, **Button color** | A color from the palette, your own with the eyedropper, or in the text field a value like `#AEEA00` or a [color name](https://vuetifyjs.com/en/styles/colors/) like `teal`. *Default* uses the theme. The button color can also be *Transparent* (no background, no shadow). Without an own icon color, the icon uses the theme color on transparent buttons and turns dark on light buttons. |
 
 ## Control from a flow
 
