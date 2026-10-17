@@ -14,7 +14,10 @@
             "nextIcon": "Next icon",
             "iconColor": "Icon color",
             "iconSize": "Icon size",
-            "buttonColor": "Button color"
+            "buttonColor": "Button color",
+            "layout": "Layout",
+            "overflow": "Long text",
+            "buttonRadius": "Corners"
         },
         "placeholder": {
             "label": "Text above the widget (optional, HTML allowed)",
@@ -26,7 +29,7 @@
         },
         "preview": {
             "title": "Preview",
-            "hint": "Use the buttons in the preview to step through the options. Colors come from the group's theme.",
+            "hint": "Use the buttons in the preview to step through the options. Drag its lower right corner to make it narrower. Colors come from the group's theme.",
             "noOptions": "No option available"
         },
         "icon": {
@@ -48,6 +51,22 @@
             "m": "Medium (24 px)",
             "l": "Large (32 px)",
             "custom": "Own size in pixels"
+        },
+        "layout": {
+            "center": "Centered, as wide as the longest option",
+            "edges": "Buttons at the edges, text between"
+        },
+        "overflow": {
+            "wrap": "Wrap: at most 2 lines, then …",
+            "shrink": "Shrink, then wrap and …",
+            "ellipsis": "One line, then …"
+        },
+        "radius": {
+            "square": "Square (0 px)",
+            "standard": "Default (4 px)",
+            "rounded": "Rounded (12 px)",
+            "round": "Round (24 px)",
+            "custom": "Own radius in pixels"
         },
         "errors": {
             "noGroup": "No group configured",

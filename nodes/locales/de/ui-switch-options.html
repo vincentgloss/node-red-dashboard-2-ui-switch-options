@@ -21,7 +21,7 @@
             Die aktuelle Option bleibt gewählt, wenn sie noch in der Liste ist, sonst die erste.</dd>
         <dt class="optional">ui_update <span class="property-type">object</span></dt>
         <dd>Ändert das Aussehen: <code>label</code>, <code>prevIcon</code>, <code>nextIcon</code>, <code>iconColor</code>,
-            <code>iconSize</code>, <code>buttonColor</code>, z. B. <code>{"label":"Modus","buttonColor":"red"}</code>.
+            <code>iconSize</code>, <code>buttonColor</code>, <code>buttonRadius</code>, z. B. <code>{"label":"Modus","buttonColor":"red"}</code>.
             <code>null</code> stellt die Einstellung aus dem Editor wieder her. <code>class</code> fügt CSS-Klassen hinzu.</dd>
         <dt class="optional">enabled <span class="property-type">boolean</span></dt>
         <dd><code>false</code> sperrt die Buttons, <code>true</code> gibt sie wieder frei.</dd>
@@ -52,7 +52,8 @@
 
     <h3>Einstellungen</h3>
     <p>Oben im Editor zeigt eine <b>Vorschau</b> das Widget mit den aktuellen Einstellungen und den Farben aus dem Theme der Gruppe.
-        Mit ihren Buttons blätterst du durch die Optionen. Die Einstellungen sind auf die Tabs <i>Optionen</i> und <i>Darstellung</i> verteilt.</p>
+        Mit ihren Buttons blätterst du durch die Optionen. An der rechten unteren Ecke lässt sie sich schmaler ziehen,
+        um zu sehen, wie sich langer Text in einem schmalen Widget verhält. Die Einstellungen sind auf die Tabs <i>Optionen</i> und <i>Darstellung</i> verteilt.</p>
     <dl class="message-properties">
         <dt>Gruppe, Größe</dt>
         <dd>Wo das Widget im Dashboard erscheint und wie viel Platz es einnimmt.</dd>
@@ -65,6 +66,16 @@
         <dd>Ohne Haken bleiben die Buttons bei der ersten und der letzten Option stehen.</dd>
         <dt>Nachricht senden, wenn eine Eingabe-Nachricht eine Option wählt</dt>
         <dd>Ohne Haken lassen, wenn das Widget nur einen Zustand anzeigt, damit keine Nachricht im Kreis läuft.</dd>
+        <dt>Layout</dt>
+        <dd><i>Zentriert</i>: Der Text ist so breit wie die längste Option, die Buttons stehen direkt daneben.
+            <i>Buttons am Rand</i>: Die Buttons stehen links und rechts am Rand, der Text nutzt den Platz dazwischen.
+            In beiden Fällen bleiben die Buttons beim Umschalten an ihrer Stelle.</dd>
+        <dt>Langer Text</dt>
+        <dd>Was passiert, wenn eine Beschriftung nicht in den Platz passt.
+            <i>Umbrechen</i>: höchstens 2 Zeilen, dann „…“.
+            <i>Verkleinern</i>: Die Schrift wird für alle Optionen gleich so weit kleiner, dass sie in eine Zeile passen, höchstens bis 14 px.
+            Reicht das nicht, wird umgebrochen wie bei <i>Umbrechen</i>.
+            <i>Eine Zeile</i>: sofort „…“. Gekürzter Text erscheint vollständig als Tooltip.</dd>
         <dt>Icon zurück, Icon weiter</dt>
         <dd>Ein Klick öffnet die Icon-Auswahl mit passenden Vorschlägen. Die Suche findet alle
             <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design Icons</a> des installierten Dashboards.
@@ -76,5 +87,8 @@
             oder ein <a href="https://vuetifyjs.com/en/styles/colors/" target="_blank">Farbname</a> wie <code>teal</code>.
             <i>Standard</i> nutzt das Theme. Bei der Button-Farbe gibt es zusätzlich <i>Transparent</i>: kein Hintergrund und kein Schatten.
             Ohne eigene Icon-Farbe ist das Icon auf transparenten Buttons in der Theme-Farbe und auf hellen Buttons dunkel.</dd>
+        <dt>Ecken</dt>
+        <dd>Rundung der Buttons: <i>Eckig</i> (0 px), <i>Standard</i> (4 px), <i>Abgerundet</i> (12 px) oder <i>Rund</i> (24 px).
+            Im Feld daneben steht ein eigener Radius in Pixeln.</dd>
     </dl>
 </script>

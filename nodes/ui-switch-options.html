@@ -6,6 +6,10 @@
         const DEFAULT_THEME = { primary: '#0094ce', groupBg: '#ffffff' }
         // Icon sizes in px. S is the size Dashboard uses without a setting, so it is stored as empty.
         const SIZES = { s: { value: '', px: 18 }, m: { value: '24', px: 24 }, l: { value: '32', px: 32 } }
+        // Button corner radius in px. Standard is the Vuetify default (4 px), stored as empty. 24 px makes the 48 px high button fully round.
+        const RADII = { square: { value: '0', px: 0 }, standard: { value: '', px: 4 }, rounded: { value: '12', px: 12 }, round: { value: '24', px: 24 } }
+        // Smallest font size for long text set to "shrink", as in the widget
+        const MIN_FONT = 14
         const PALETTE = ['#dc2626', '#ea580c', '#d97706', '#16a34a', '#0d9488', '#0284c7', '#2563eb', '#7c3aed', '#db2777', '#475569', '#0f172a', '#ffffff']
         // Vuetify color names as the widget shows them on icons (v-icon turns names into Vuetify color classes)
         const VUETIFY_COLORS = {
@@ -121,7 +125,10 @@
                 nextIcon: { value: '' },
                 iconColor: { value: '' },
                 iconSize: { value: '' },
-                buttonColor: { value: '' }
+                buttonColor: { value: '' },
+                buttonRadius: { value: '' },
+                layout: { value: 'center' },
+                overflow: { value: 'wrap' }
             },
             inputs: 1,
             outputs: 1,
@@ -137,7 +144,10 @@
                 const $editor = $('#uso-editor')
                 let previewIndex = 0
                 let ready = false
-                stopPreview = function () { ready = false }
+                stopPreview = function () {
+                    ready = false
+                    previewObserver.disconnect()
+                }
 
                 $('#node-input-size').elementSizer({
                     width: '#node-input-width',
@@ -233,19 +243,29 @@
                 colorField($('#node-input-iconColor'), false)
                 colorField($('#node-input-buttonColor'), true)
 
-                // ---- icon size --------------------------------------------------------------------------
-                function syncSize () {
-                    const value = String($('#node-input-iconSize').val() || '').trim().replace(/px$/, '')
-                    $('#uso-size-presets .uso-size').each(function () {
-                        const size = SIZES[$(this).attr('data-size')]
-                        $(this).toggleClass('selected', value === size.value || (value !== '' && Number(value) === size.px))
+                // ---- icon size and corner radius ---------------------------------------------------------
+                // Preset buttons (data-preset) next to a text field in px that holds the value
+                function presetField ($input, $presets, presets) {
+                    function sync () {
+                        const value = String($input.val() || '').trim().replace(/px$/, '')
+                        $presets.find('[data-preset]').each(function () {
+                            const preset = presets[$(this).attr('data-preset')]
+                            $(this).toggleClass('selected', value === preset.value || (value !== '' && Number(value) === preset.px))
+                        })
+                    }
+                    $presets.on('click', '[data-preset]', function () {
+                        $input.val(presets[$(this).attr('data-preset')].value).trigger('change')
                     })
+                    $input.on('input change', sync)
+                    sync()
                 }
-                $('#uso-size-presets').on('click', '.uso-size', function () {
-                    $('#node-input-iconSize').val(SIZES[$(this).attr('data-size')].value).trigger('change')
-                })
-                $('#node-input-iconSize').on('input change', syncSize)
-                syncSize()
+                presetField($('#node-input-iconSize'), $('#uso-size-presets'), SIZES)
+                presetField($('#node-input-buttonRadius'), $('#uso-radius-presets'), RADII)
+
+                // ---- layout -----------------------------------------------------------------------------
+                // Nodes from before these settings get the defaults
+                if (!node.layout) $('#node-input-layout').val('center')
+                if (!node.overflow) $('#node-input-overflow').val('wrap')
 
                 // ---- icon pickers -----------------------------------------------------------------------
                 // A button showing the current icon; it opens a panel with suggestions and a search over all Material Design Icons.
@@ -382,6 +402,10 @@
                     const background = button === '' ? colors.primary : button
                     const iconCss = icon ? iconColorCss(icon, colors) : button === 'transparent' ? colors.primary : (contrastColor(button) || '#ffffff')
                     const iconPx = size === '' ? SIZES.s.px + 'px' : /^\d+(\.\d+)?$/.test(size) ? size + 'px' : size
+                    const radius = String($('#node-input-buttonRadius').val() || '').trim()
+                    const radiusCss = radius === '' ? RADII.standard.px + 'px' : /^\d+(\.\d+)?$/.test(radius) ? radius + 'px' : radius
+                    const layout = $('#node-input-layout').val() === 'edges' ? 'edges' : 'center'
+                    const overflow = ['shrink', 'ellipsis'].includes($('#node-input-overflow').val()) ? $('#node-input-overflow').val() : 'wrap'
 
                     // The "standard" swatches show what standard currently means
                     $('#node-input-buttonColor').siblings('.uso-swatches').find('.uso-dot').css('background', colors.primary)
@@ -390,16 +414,52 @@
                     $preview.css({ 'background-color': colors.groupBg, color: contrastColor(colors.groupBg) === '#ffffff' ? '#ffffff' : '#000000' })
                     const label = $('#node-input-label').val()
                     $preview.find('.uso-w-label').html(sanitize(label)).toggle(label !== '')
-                    $preview.find('.uso-w-current').html(options.length ? sanitize(options[previewIndex]) : t('preview.noOptions'))
+                    // All labels on top of each other, only the current one visible, as in the widget
+                    $preview.find('.uso-w-row').attr('class', 'uso-w-row uso-layout-' + layout)
+                    const $current = $preview.find('.uso-w-current').attr('class', 'uso-w-current uso-overflow-' + overflow).empty()
+                    if (!options.length) $('<span class="uso-w-option active"></span>').text(t('preview.noOptions')).appendTo($current)
+                    options.forEach(function (option, i) {
+                        $('<span class="uso-w-option"></span>').toggleClass('active', i === previewIndex).html(sanitize(option)).appendTo($current)
+                    })
                     $preview.find('.uso-w-btn').each(function () {
                         const prev = $(this).attr('data-step') === '-1'
                         const enabled = prev ? canPrev : canNext
                         const name = iconName($(prev ? '#node-input-prevIcon' : '#node-input-nextIcon').val()) || (prev ? DEFAULT_PREV : DEFAULT_NEXT)
                         $(this).prop('disabled', !enabled).toggleClass('uso-w-flat', button === 'transparent')
-                            .css('background-color', enabled ? background : '')
+                            .css({ 'background-color': enabled ? background : '', 'border-radius': radiusCss })
                         $(this).find('.uso-glyph').text(glyph(name)).css({ color: enabled ? iconCss : '', 'font-size': iconPx })
                     })
+                    fitPreview()
                 }
+                // Same as fit() in the widget: "shrink" uses one font size for all options, as large as possible
+                // while every label fits on one line, not below MIN_FONT. Cut off text gets a tooltip.
+                function fitPreview () {
+                    const box = $('#uso-preview .uso-w-current')[0]
+                    if (!box) return
+                    box.style.fontSize = ''
+                    if (box.classList.contains('uso-overflow-shrink') && box.clientWidth > 0) {
+                        const labels = Array.from(box.children)
+                        box.classList.add('uso-measuring')
+                        let size = parseFloat(getComputedStyle(box).fontSize)
+                        while (size > MIN_FONT && labels.some(function (label) { return label.scrollWidth > label.clientWidth + 1 })) {
+                            size = Math.max(size - 1, MIN_FONT)
+                            box.style.fontSize = size + 'px'
+                        }
+                        box.classList.remove('uso-measuring')
+                    }
+                    const active = box.querySelector('.uso-w-option.active')
+                    const cut = active && (active.scrollHeight > active.clientHeight + 1 || active.scrollWidth > active.clientWidth + 1)
+                    box.title = cut ? active.textContent.trim() : ''
+                }
+                // The preview can be made narrower at its lower right corner, to see how long text behaves in a narrow widget.
+                let previewWidth = -1
+                const previewObserver = new ResizeObserver(function (entries) {
+                    const width = Math.round(entries[0].contentRect.width)
+                    if (width === previewWidth) return
+                    previewWidth = width
+                    requestAnimationFrame(function () { if (ready) fitPreview() })
+                })
+                previewObserver.observe($('#uso-preview')[0])
                 $('#uso-preview').on('click', '.uso-w-btn', function () {
                     const count = previewOptions().length
                     if (!count) return
@@ -504,6 +564,21 @@
 
             <div id="uso-tab-look" style="display: none;">
                 <div class="form-row">
+                    <label for="node-input-layout"><i class="fa fa-arrows-h"></i> <span data-i18n="ui-switch-options.label.layout"></span></label>
+                    <select id="node-input-layout" style="width: 70%;">
+                        <option value="center" data-i18n="ui-switch-options.layout.center"></option>
+                        <option value="edges" data-i18n="ui-switch-options.layout.edges"></option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="node-input-overflow"><i class="fa fa-text-width"></i> <span data-i18n="ui-switch-options.label.overflow"></span></label>
+                    <select id="node-input-overflow" style="width: 70%;">
+                        <option value="wrap" data-i18n="ui-switch-options.overflow.wrap"></option>
+                        <option value="shrink" data-i18n="ui-switch-options.overflow.shrink"></option>
+                        <option value="ellipsis" data-i18n="ui-switch-options.overflow.ellipsis"></option>
+                    </select>
+                </div>
+                <div class="form-row">
                     <label><i class="fa fa-arrow-left"></i> <span data-i18n="ui-switch-options.label.prevIcon"></span></label>
                     <input type="hidden" id="node-input-prevIcon">
                 </div>
@@ -514,7 +589,7 @@
                 <div class="form-row uso-flex-row">
                     <label for="node-input-iconSize"><i class="fa fa-arrows-alt"></i> <span data-i18n="ui-switch-options.label.iconSize"></span></label>
                     <span id="uso-size-presets" class="button-group">
-                        <button type="button" class="red-ui-button toggle uso-size" data-size="s" data-i18n="[title]ui-switch-options.size.s">S</button><button type="button" class="red-ui-button toggle uso-size" data-size="m" data-i18n="[title]ui-switch-options.size.m">M</button><button type="button" class="red-ui-button toggle uso-size" data-size="l" data-i18n="[title]ui-switch-options.size.l">L</button>
+                        <button type="button" class="red-ui-button toggle uso-size" data-preset="s" data-i18n="[title]ui-switch-options.size.s">S</button><button type="button" class="red-ui-button toggle uso-size" data-preset="m" data-i18n="[title]ui-switch-options.size.m">M</button><button type="button" class="red-ui-button toggle uso-size" data-preset="l" data-i18n="[title]ui-switch-options.size.l">L</button>
                     </span>
                     <span class="uso-size-custom">
                         <input type="text" id="node-input-iconSize" placeholder="18" data-i18n="[title]ui-switch-options.size.custom">
@@ -533,6 +608,16 @@
                         <input type="text" id="node-input-buttonColor" data-i18n="[placeholder]ui-switch-options.placeholder.color">
                     </div>
                 </div>
+                <div class="form-row uso-flex-row">
+                    <label for="node-input-buttonRadius"><i class="fa fa-square-o"></i> <span data-i18n="ui-switch-options.label.buttonRadius"></span></label>
+                    <span id="uso-radius-presets" class="button-group">
+                        <button type="button" class="red-ui-button toggle uso-radius" data-preset="square" data-i18n="[title]ui-switch-options.radius.square"><span class="uso-radius-demo" style="border-radius: 0;"></span></button><button type="button" class="red-ui-button toggle uso-radius" data-preset="standard" data-i18n="[title]ui-switch-options.radius.standard"><span class="uso-radius-demo" style="border-radius: 2px;"></span></button><button type="button" class="red-ui-button toggle uso-radius" data-preset="rounded" data-i18n="[title]ui-switch-options.radius.rounded"><span class="uso-radius-demo" style="border-radius: 5px;"></span></button><button type="button" class="red-ui-button toggle uso-radius" data-preset="round" data-i18n="[title]ui-switch-options.radius.round"><span class="uso-radius-demo" style="border-radius: 8px;"></span></button>
+                    </span>
+                    <span class="uso-size-custom">
+                        <input type="text" id="node-input-buttonRadius" placeholder="4" data-i18n="[title]ui-switch-options.radius.custom">
+                        <span>px</span>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
@@ -546,10 +631,19 @@
     #uso-editor .uso-preview-toggle { border: 0; background: none; padding: 0 0 6px; color: inherit; font-weight: bold; cursor: pointer; }
     #uso-editor .uso-preview-toggle i { width: 10px; }
     #uso-editor #uso-preview-body[hidden] { display: none; }
-    #uso-editor .uso-preview { display: flex; flex-direction: column; align-items: center; padding: 20px; border: 1px solid var(--red-ui-secondary-border-color, #ccc); border-radius: 4px; font-family: Helvetica, Arial, sans-serif; }
+    #uso-editor .uso-preview { display: flex; flex-direction: column; align-items: center; box-sizing: border-box; width: 100%; min-width: 220px; max-width: 100%; padding: 20px; overflow: hidden; resize: horizontal;
+        border: 1px solid var(--red-ui-secondary-border-color, #ccc); border-radius: 4px; font-family: Helvetica, Arial, sans-serif; }
     #uso-editor .uso-w-label { font-size: 21px; font-weight: 700; line-height: 1.425; margin-bottom: 20px; text-align: center; }
-    #uso-editor .uso-w-row { display: flex; align-items: center; justify-content: center; }
-    #uso-editor .uso-w-current { font-size: 21px; line-height: 1.425; margin: 0 20px; text-align: center; }
+    #uso-editor .uso-w-row { display: flex; align-items: center; justify-content: center; max-width: 100%; }
+    #uso-editor .uso-w-row.uso-layout-edges { width: 100%; justify-content: space-between; }
+    #uso-editor .uso-w-row > .uso-w-btn { flex-shrink: 0; }
+    /* Long text, as in the widget: all labels on top of each other, only the current one visible */
+    #uso-editor .uso-w-current { display: grid; grid-template-columns: minmax(0, 1fr); flex: 0 1 auto; min-width: 0; margin: 0 20px; font-size: 21px; line-height: 1.425; text-align: center; }
+    #uso-editor .uso-layout-edges .uso-w-current { flex: 1 1 auto; }
+    #uso-editor .uso-w-option { grid-area: 1 / 1; align-self: center; min-width: 0; overflow-wrap: break-word; visibility: hidden; }
+    #uso-editor .uso-w-option.active { visibility: visible; }
+    #uso-editor .uso-overflow-wrap .uso-w-option, #uso-editor .uso-overflow-shrink .uso-w-option { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+    #uso-editor .uso-overflow-ellipsis .uso-w-option, #uso-editor .uso-w-current.uso-measuring .uso-w-option { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     #uso-editor .uso-w-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; height: 48px; padding: 0 16px; border: 0; border-radius: 4px; cursor: pointer; overflow: hidden;
         box-shadow: 0 3px 1px -2px rgba(0, 0, 0, .2), 0 2px 2px 0 rgba(0, 0, 0, .14), 0 1px 5px 0 rgba(0, 0, 0, .12); }
     #uso-editor .uso-w-btn.uso-w-flat { box-shadow: none; }
@@ -564,7 +658,8 @@
     #uso-editor .uso-flex-row > label { flex: 0 0 auto; margin-top: 6px; }
 
     /* Icon size */
-    #uso-editor #uso-size-presets .red-ui-button { min-width: 38px; }
+    #uso-editor #uso-size-presets .red-ui-button, #uso-editor #uso-radius-presets .red-ui-button { min-width: 38px; }
+    #uso-editor .uso-radius-demo { display: inline-block; width: 18px; height: 12px; vertical-align: middle; border: 2px solid currentColor; }
     #uso-editor .uso-size-custom { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; }
     #uso-editor .uso-size-custom input { width: 70px; }
 

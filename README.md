@@ -33,7 +33,7 @@ A ready-made demo is included: **Import → Examples → @vincentgloss/node-red-
 
 ## Configuration
 
-At the top of the editor a **preview** shows the widget with the current settings and the colors of the group's theme. Its buttons step through the options. The settings are split into the tabs *Options* and *Appearance*.
+At the top of the editor a **preview** shows the widget with the current settings and the colors of the group's theme. Its buttons step through the options. Drag its lower right corner to make it narrower and see how long text behaves in a narrow widget. The settings are split into the tabs *Options* and *Appearance*.
 
 | Field | Description |
 |---|---|
@@ -42,9 +42,12 @@ At the top of the editor a **preview** shows the widget with the current setting
 | **Options** | The list to step through. Each option has a label (shown, HTML allowed) and a value (sent). The value can be text, a number, a boolean or JSON. Without a label the value is shown. |
 | **After the last option, start again at the first** | On by default. If unchecked, the buttons stop at the first and the last option. |
 | **Send a message when an input message selects an option** | Off for new nodes. Leave it off if the widget only shows a state, so a message cannot loop back. |
+| **Layout** | *Centered*: the text is as wide as the longest option, the buttons sit right next to it. *Buttons at the edges*: the buttons sit at the left and right edge, the text uses the room between them. Either way the buttons stay in place when the option changes. |
+| **Long text** | *Wrap*: at most 2 lines, then "…". *Shrink*: the font gets smaller, the same for all options, until they fit on one line (down to 14 px), then as *Wrap*. *One line*: "…" right away. Cut off text is shown in full as a tooltip. |
 | **Prev icon**, **Next icon** | Picker with suitable suggestions and a search over all [Material Design icons](https://pictogrammers.com/library/mdi/) of the installed Dashboard. Default: `chevron-double-left` and `chevron-double-right`. |
 | **Icon size** | **S** (18 px, default), **M** (24 px) or **L** (32 px), or an own size in pixels. |
 | **Icon color**, **Button color** | A color from the palette, your own with the eyedropper, or in the text field a value like `#AEEA00` or a [color name](https://vuetifyjs.com/en/styles/colors/) like `teal`. *Default* uses the theme. The button color can also be *Transparent* (no background, no shadow). Without an own icon color, the icon uses the theme color on transparent buttons and turns dark on light buttons. |
+| **Corners** | Corner radius of the buttons: *Square* (0 px), *Default* (4 px), *Rounded* (12 px), *Round* (24 px) or an own radius in pixels. |
 
 ## Control from a flow
 
@@ -56,7 +59,7 @@ First `msg.options` and `msg.ui_update` are applied, then one option is selected
 | `msg.index` | Selects the option at this position, starting at 0. |
 | `msg.step` | Moves by this many options: `1` is next, `-1` previous. Stops at the ends if *start again at the first* is off. |
 | `msg.options` | Replaces the options. Plain values like `["Off","On"]` or `[18,20,22]`, or objects like `[{"label":"Off","value":"off"}]`. The current option stays selected if it is still in the list, otherwise the first one. |
-| `msg.ui_update` | Changes `label`, `prevIcon`, `nextIcon`, `iconColor`, `iconSize` or `buttonColor`, e.g. `{"label":"Mode","buttonColor":"red"}`. `null` returns to the editor setting. `class` adds CSS classes. |
+| `msg.ui_update` | Changes `label`, `prevIcon`, `nextIcon`, `iconColor`, `iconSize`, `buttonColor` or `buttonRadius`, e.g. `{"label":"Mode","buttonColor":"red"}`. `null` returns to the editor setting. `class` adds CSS classes. |
 | `msg.enabled` | `false` disables the buttons, `true` enables them again. |
 | `msg.visible` | `false` hides the widget, `true` shows it again. |
 | `msg.class` | Adds CSS classes to the widget. |

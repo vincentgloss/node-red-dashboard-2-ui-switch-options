@@ -43,7 +43,7 @@ module.exports = function (RED) {
     })
 
     // Settings that msg.ui_update can change at runtime
-    const APPEARANCE = ['label', 'prevIcon', 'nextIcon', 'iconColor', 'iconSize', 'buttonColor']
+    const APPEARANCE = ['label', 'prevIcon', 'nextIcon', 'iconColor', 'iconSize', 'buttonColor', 'buttonRadius']
 
     function isObject (value) {
         return value !== null && typeof value === 'object'

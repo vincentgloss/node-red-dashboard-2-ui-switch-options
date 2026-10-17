@@ -14,7 +14,10 @@
             "nextIcon": "Icon weiter",
             "iconColor": "Icon-Farbe",
             "iconSize": "Icon-Größe",
-            "buttonColor": "Button-Farbe"
+            "buttonColor": "Button-Farbe",
+            "layout": "Layout",
+            "overflow": "Langer Text",
+            "buttonRadius": "Ecken"
         },
         "placeholder": {
             "label": "Text über dem Widget (optional, HTML erlaubt)",
@@ -26,7 +29,7 @@
         },
         "preview": {
             "title": "Vorschau",
-            "hint": "Mit den Buttons in der Vorschau blätterst du durch die Optionen. Farben aus dem Theme der Gruppe.",
+            "hint": "Mit den Buttons in der Vorschau blätterst du durch die Optionen. An der rechten unteren Ecke lässt sie sich schmaler ziehen. Farben aus dem Theme der Gruppe.",
             "noOptions": "No option available"
         },
         "icon": {
@@ -48,6 +51,22 @@
             "m": "Mittel (24 px)",
             "l": "Groß (32 px)",
             "custom": "Eigene Größe in Pixeln"
+        },
+        "layout": {
+            "center": "Zentriert, so breit wie die längste Option",
+            "edges": "Buttons am Rand, Text dazwischen"
+        },
+        "overflow": {
+            "wrap": "Umbrechen: höchstens 2 Zeilen, dann …",
+            "shrink": "Verkleinern, dann umbrechen und …",
+            "ellipsis": "Eine Zeile, dann …"
+        },
+        "radius": {
+            "square": "Eckig (0 px)",
+            "standard": "Standard (4 px)",
+            "rounded": "Abgerundet (12 px)",
+            "round": "Rund (24 px)",
+            "custom": "Eigener Radius in Pixeln"
         },
         "errors": {
             "noGroup": "Keine Gruppe konfiguriert",
